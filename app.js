@@ -65,7 +65,6 @@ async function callGemini(userMsg) {
   }
 
   const data = await res.json();
-  console.log('Gemini raw response:', JSON.stringify(data, null, 2));
 
   // Gemini sometimes wraps in ```json ... ``` despite instructions
   let raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
