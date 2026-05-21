@@ -1,10 +1,9 @@
 // api/chat.js — Vercel serverless function
-// La chiave Gemini non è mai nel codice — vive in Vercel > Settings > Environment Variables
-// Nome variabile: GEMINI_API_KEY
+// Usa Groq (gratuito) — chiave in Vercel > Settings > Environment Variables > GROQ_API_KEY
 
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
-const SYSTEM = `You are an AI agent representing Paolo Garito, a Senior Service & Product Designer based in Italy. You are embedded in his portfolio website answering questions from recruiters and people curious about Paolo.
+const SYSTEM = `You are an AI agent representing Paolo Garito, a Senior Service & Product Designer based in Milan, Italy. You are embedded in his portfolio website answering questions from recruiters and people curious about Paolo.
 
 Respond ONLY with raw JSON (no markdown, no backticks, no preamble).
 
@@ -41,38 +40,53 @@ PERSONALITY: Second sport: surf. First: bouldering/climbing. Tools: Figma (exper
 
 CONTACT: garito.paolo@gmail.com — linkedin.com/in/paologarito
 
-RULES: Never invent info. If asked about Figma files, say they're available on request. Be warm and direct. Keep chat reply to 2-3 sentences. Paragraphs carry the detail.`;
+RULES: Never invent info. If asked about Figma files, say they are available on request. Be warm and direct. Keep chat reply to 2-3 sentences. Paragraphs carry the detail.`;
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  if (!process.env.GEMINI_API_KEY) {
-    return res.status(500).json({ error: 'GEMINI_API_KEY not set in Vercel environment variables' });
+  if (!process.env.GROQ_API_KEY) {
+    return res.status(500).json({ error: 'GROQ_API_KEY not set in Vercel environment variables' });
   }
 
   try {
-    const { contents, generationConfig } = req.body;
+    const { contents } = req.body;
 
-    const geminiRes = await fetch(GEMINI_URL, {
+    // Convert Gemini-format history to OpenAI-format messages
+    const messages = [
+      { role: 'system', content: SYSTEM },
+      ...contents.map(c => ({
+        role: c.role === 'model' ? 'assistant' : 'user',
+        content: c.parts[0].text
+      }))
+    ];
+
+    const groqRes = await fetch(GROQ_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-     body: JSON.stringify({
-       contents: [
-         { role: 'user', parts: [{ text: SYSTEM }] },
-         { role: 'model', parts: [{ text: 'Understood. I will respond as Paolo\'s AI agent in JSON format.' }] },
-         ...contents
-       ],
-       generationConfig
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages,
+        temperature: 0.7,
+        max_tokens: 600
       })
     });
 
-    if (!geminiRes.ok) {
-      const err = await geminiRes.json().catch(() => ({}));
-      return res.status(geminiRes.status).json({ error: err?.error?.message || geminiRes.statusText });
+    if (!groqRes.ok) {
+      const err = await groqRes.json().catch(() => ({}));
+      return res.status(groqRes.status).json({ error: err?.error?.message || groqRes.statusText });
     }
 
-    const data = await geminiRes.json();
-    return res.status(200).json(data);
+    const data = await groqRes.json();
+    const text = data.choices?.[0]?.message?.content || '{}';
+
+    // Return in same shape app.js expects from Gemini
+    return res.status(200).json({
+      candidates: [{ content: { parts: [{ text }] } }]
+    });
 
   } catch (err) {
     return res.status(500).json({ error: err.message });
