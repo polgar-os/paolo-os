@@ -40,23 +40,18 @@ CONTACT: garito.paolo@gmail.com — linkedin.com/in/paologarito
 
 RULES: Never invent info. If asked about Figma files, say they're available on request. Be warm and direct. Keep chat reply to 2-3 sentences. Paragraphs carry the detail.`;
 
-// ── Gemini API call ───────────────────────────────────────────────────────
-// Replace with your free key from https://aistudio.google.com/app/apikey
-const GEMINI_KEY = 'AIzaSyD8m9cVcDwrNNs5N7yRWKh0-jmyAL8yAXg';
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`;
-
+// ── Gemini API call (via Vercel serverless — key is never in this file) ──
 let conversationHistory = [];
 
 async function callGemini(userMsg) {
   conversationHistory.push({ role: 'user', parts: [{ text: userMsg }] });
 
   const body = {
-    system_instruction: { parts: [{ text: SYSTEM }] },
     contents: conversationHistory,
     generationConfig: { temperature: 0.7, maxOutputTokens: 600 }
   };
 
-  const res = await fetch(GEMINI_URL, {
+  const res = await fetch('/api/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
@@ -100,8 +95,8 @@ async function callGemini(userMsg) {
   }
 
   // Ensure required fields always exist
-  parsed.chat = parsed.chat || parsed.paragraphs?.[0] || raw.slice(0, 200);
-  parsed.title = parsed.title || 'Note';
+  parsed.chat       = parsed.chat       || parsed.paragraphs?.[0] || raw.slice(0, 200);
+  parsed.title      = parsed.title      || 'Note';
   parsed.paragraphs = parsed.paragraphs || [parsed.chat];
 
   return parsed;
@@ -119,7 +114,7 @@ function playClick() {
     g.gain.setValueAtTime(0.15, ctx.currentTime);
     g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
     o.start(); o.stop(ctx.currentTime + 0.12);
-  } catch (e) { }
+  } catch(e) {}
 }
 
 // ── Canvas pan/zoom ───────────────────────────────────────────────────────
@@ -128,8 +123,8 @@ let pan = false, px = 0, py = 0, pox = 0, poy = 0;
 let wz = 10, wi = 0;
 
 const container = document.getElementById('canvas-container');
-const canvas = document.getElementById('canvas');
-const zoomEl = document.getElementById('zoom-indicator');
+const canvas    = document.getElementById('canvas');
+const zoomEl    = document.getElementById('zoom-indicator');
 
 function applyT() {
   canvas.style.transform = `translate(${ox}px,${oy}px) scale(${sc})`;
@@ -174,7 +169,7 @@ document.querySelectorAll('.sb-btn[data-tip]').forEach(btn => {
   });
   btn.addEventListener('mousemove', e => {
     tooltip.style.left = (e.clientX + 14) + 'px';
-    tooltip.style.top = (e.clientY - 10) + 'px';
+    tooltip.style.top  = (e.clientY - 10) + 'px';
   });
   btn.addEventListener('mouseleave', () => tooltip.classList.remove('show'));
 });
@@ -317,7 +312,7 @@ function spawnWindow({ label, html, width, isAI }) {
   const rot = ROTS[wi % ROTS.length];
   const jitter = wi * 20;
   win.style.left = (pos[0] + (jitter % 60) - 30) + 'px';
-  win.style.top = (pos[1] + (jitter % 40) - 20) + 'px';
+  win.style.top  = (pos[1] + (jitter % 40) - 20) + 'px';
   win.style.transform = `rotate(${rot}deg)`;
   win.style.zIndex = wz++;
   if (width) win.style.width = width + 'px';
@@ -355,8 +350,8 @@ document.querySelectorAll('.sb-btn[data-section]').forEach(btn => {
 // ── Chat ──────────────────────────────────────────────────────────────────
 const chatOverlay = document.getElementById('chat-overlay');
 const chatMessages = document.getElementById('chat-messages');
-const chatInput = document.getElementById('chat-input');
-const chatSend = document.getElementById('chat-send');
+const chatInput    = document.getElementById('chat-input');
+const chatSend     = document.getElementById('chat-send');
 
 document.getElementById('chat-trigger').addEventListener('click', () => {
   chatOverlay.classList.remove('hidden');
@@ -424,7 +419,7 @@ function makeDraggable(win, handle) {
     e.preventDefault();
     dr = true; sx = e.clientX; sy = e.clientY;
     ol = parseInt(win.style.left) || 0;
-    ot = parseInt(win.style.top) || 0;
+    ot = parseInt(win.style.top)  || 0;
     or_ = parseFloat(win.style.transform?.match(/rotate\(([^)]+)deg\)/)?.[1] || 0);
     win.classList.add('dragging');
     win.style.zIndex = wz++;
@@ -434,8 +429,8 @@ function makeDraggable(win, handle) {
     const dx = (e.clientX - sx) / sc;
     const dy = (e.clientY - sy) / sc;
     win.style.left = (ol + dx) + 'px';
-    win.style.top = (ot + dy) + 'px';
-    const t = Math.sqrt(dx * dx + dy * dy);
+    win.style.top  = (ot + dy) + 'px';
+    const t = Math.sqrt(dx*dx + dy*dy);
     win.style.transform = `rotate(${or_ * Math.max(0, 1 - t / 110)}deg)`;
   });
   window.addEventListener('mouseup', () => {
