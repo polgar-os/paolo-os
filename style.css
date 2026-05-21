@@ -294,3 +294,111 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 ::-webkit-scrollbar{width:3px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--border-d);border-radius:2px;}
+
+/* ─── Chat dialog — redesign (centered, large, input-only) ─── */
+#chat-overlay {
+  background: rgba(0,0,0,0.35);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+#chat-dialog {
+  width: 100%;
+  max-width: 620px;
+  max-height: none;
+  border-radius: 20px;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.22);
+}
+
+#chat-header {
+  padding: 18px 20px;
+  border-radius: 20px 20px 0 0;
+}
+
+.ch-name { font-size: 15px; }
+
+/* Body area with suggestions and loading */
+#chat-body {
+  padding: 32px 24px 20px;
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+#chat-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.suggestion {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--mid);
+  cursor: pointer;
+  transition: all .15s;
+}
+.suggestion:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Loading state */
+#chat-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+#chat-loading.hidden { display: none; }
+
+#chat-loading-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  max-width: 280px;
+  text-align: center;
+  line-height: 1.5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Input row — larger */
+#chat-input-row {
+  padding: 14px 16px;
+  gap: 10px;
+}
+
+#chat-input {
+  font-size: 14px;
+  padding: 12px 14px;
+  border-radius: 10px;
+}
+
+#chat-send {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+#chat-send svg { width: 14px; height: 14px; }
+
+#chat-footer {
+  padding: 8px;
+  border-radius: 0 0 20px 20px;
+}
+
+/* Remove old message styles no longer needed */
+.msg, .msg-bubble { display: none; }

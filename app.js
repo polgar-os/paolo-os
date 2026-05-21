@@ -65,6 +65,7 @@ async function callGemini(userMsg) {
   }
 
   const data = await res.json();
+  console.log('Gemini raw response:', JSON.stringify(data, null, 2));
 
   // Gemini sometimes wraps in ```json ... ``` despite instructions
   let raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
@@ -364,32 +365,47 @@ document.getElementById('chat-close').addEventListener('click', () => {
 chatSend.addEventListener('click', sendMsg);
 chatInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendMsg(); });
 
+// Suggestion chips
+document.querySelectorAll('.suggestion').forEach(btn => {
+  btn.addEventListener('click', () => {
+    chatInput.value = btn.dataset.q;
+    sendMsg();
+  });
+});
+
 async function sendMsg() {
   const text = chatInput.value.trim();
   if (!text) return;
   chatInput.value = '';
   chatSend.disabled = true;
 
-  appendMsg('msg-user', text);
-  const typing = appendTyping();
+  // Show loading, hide suggestions
+  const suggestions = document.getElementById('chat-suggestions');
+  const loading = document.getElementById('chat-loading');
+  const loadingLabel = document.getElementById('chat-loading-label');
+  if (suggestions) suggestions.style.display = 'none';
+  if (loading) loading.classList.remove('hidden');
+  if (loadingLabel) loadingLabel.textContent = text.length > 50 ? text.slice(0, 50) + '…' : text;
 
   try {
     const parsed = await callGemini(text);
-    typing.remove();
-    appendMsg('msg-agent', parsed.chat || '…');
 
-    // Build free-form window from AI paragraphs
+    // Build free-form window — title is the question
     const html = (parsed.paragraphs || [parsed.chat]).map(p => `<p>${p}</p>`).join('');
-    spawnWindow({ label: parsed.title || text.slice(0, 32), html, isAI: true });
+    spawnWindow({ label: text, html, isAI: true });
+
+    // Close dialog after answer lands on canvas
+    chatOverlay.classList.add('hidden');
 
   } catch (err) {
-    typing.remove();
-    appendMsg('msg-agent', 'Errore: ' + err.message + ' — controlla la Console (F12) per dettagli.');
     console.error(err);
+    if (loadingLabel) loadingLabel.textContent = 'Error: ' + err.message;
+  } finally {
+    if (loading) loading.classList.add('hidden');
+    if (suggestions) suggestions.style.display = 'flex';
+    chatSend.disabled = false;
+    chatInput.focus();
   }
-
-  chatSend.disabled = false;
-  chatInput.focus();
 }
 
 function appendMsg(cls, text) {

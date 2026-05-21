@@ -110,24 +110,31 @@
         <div class="ch-left">
           <div class="ch-avatar">PG</div>
           <div>
-            <div class="ch-name">Paolo's agent</div>
-            <div class="ch-sub">powered by Gemini · ask anything</div>
+            <div class="ch-name">Ask Paolo's agent</div>
+            <div class="ch-sub">answers appear on the canvas</div>
           </div>
         </div>
         <button id="chat-close">✕</button>
       </div>
-      <div id="chat-messages">
-        <div class="msg msg-agent">
-          <div class="msg-bubble">Hey — I'm Paolo's AI agent. Ask me anything about him: his work, background, projects, or how he thinks. Each answer will leave a note on the canvas.</div>
+      <div id="chat-body">
+        <div id="chat-suggestions">
+          <button class="suggestion" data-q="Who is Paolo and what does he do?">Who is Paolo?</button>
+          <button class="suggestion" data-q="What are Paolo's main projects?">Main projects</button>
+          <button class="suggestion" data-q="How does Paolo work and what's his style?">How he works</button>
+          <button class="suggestion" data-q="What are Paolo's skills and certifications?">Skills</button>
+        </div>
+        <div id="chat-loading" class="hidden">
+          <div class="dots"><span></span><span></span><span></span></div>
+          <span id="chat-loading-label"></span>
         </div>
       </div>
       <div id="chat-input-row">
-        <input type="text" id="chat-input" placeholder="Ask something about Paolo…" autocomplete="off" />
+        <input type="text" id="chat-input" placeholder="Ask anything about Paolo…" autocomplete="off" />
         <button id="chat-send">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
         </button>
       </div>
-      <div id="chat-footer">AI-generated · verify critical info</div>
+      <div id="chat-footer">AI-generated · answers land on the canvas</div>
     </div>
   </div>
 
