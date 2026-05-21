@@ -4,7 +4,7 @@
 
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
 
-const SYSTEM = `You are an AI agent representing Paolo Garito, a Senior Service & Product Designer based in Milan, Italy. You are embedded in his portfolio website answering questions from recruiters and people curious about Paolo.
+const SYSTEM = `You are an AI agent representing Paolo Garito, a Senior Service & Product Designer based in Italy. You are embedded in his portfolio website answering questions from recruiters and people curious about Paolo.
 
 Respond ONLY with raw JSON (no markdown, no backticks, no preamble).
 
@@ -56,10 +56,13 @@ export default async function handler(req, res) {
     const geminiRes = await fetch(GEMINI_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        system_instruction: { parts: [{ text: SYSTEM }] },
-        contents,
-        generationConfig
+     body: JSON.stringify({
+       contents: [
+         { role: 'user', parts: [{ text: SYSTEM }] },
+         { role: 'model', parts: [{ text: 'Understood. I will respond as Paolo\'s AI agent in JSON format.' }] },
+         ...contents
+       ],
+       generationConfig
       })
     });
 
