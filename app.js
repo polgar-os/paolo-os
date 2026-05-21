@@ -129,6 +129,10 @@ const zoomEl    = document.getElementById('zoom-indicator');
 function applyT() {
   canvas.style.transform = `translate(${ox}px,${oy}px) scale(${sc})`;
   zoomEl.textContent = Math.round(sc * 100) + '%';
+  // Keep the dot grid locked to pan/zoom so it appears truly infinite
+  const gridSize = 28 * sc;
+  container.style.backgroundSize = `${gridSize}px ${gridSize}px`;
+  container.style.backgroundPosition = `${ox % gridSize}px ${oy % gridSize}px`;
 }
 
 (function initOffset() {

@@ -99,9 +99,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 #canvas{
   position:absolute;
   width:8000px;height:5000px;
-  background-image:radial-gradient(circle,var(--dot) 1px,transparent 1px);
-  background-size:28px 28px;
-  background-color:var(--bg);
+  background-image:none;
+  background-color:transparent;
   transform-origin:0 0;
   will-change:transform;
   user-select:none;
@@ -565,15 +564,13 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .ch-left, .ch-avatar, .ch-name, .ch-sub,
 #chat-input-row, #chat-messages { all: unset; display: none !important; }
 
-/* ─── Infinite canvas fix — background follows transform ─── */
+/* ─── Infinite canvas fix — grid lives on container, updated via JS ─── */
 #canvas {
   background-attachment: local;
-  /* Override: use pseudo-element trick for truly infinite dot grid */
-  background-image: radial-gradient(circle, var(--dot) 1px, transparent 1px);
-  background-size: 28px 28px;
+  background-image: none;
 }
 
-/* The container itself also gets the dot pattern as fallback */
+/* The container holds the dot grid, JS updates backgroundPosition on pan/zoom */
 #canvas-container {
   background-image: radial-gradient(circle, var(--dot) 1px, transparent 1px);
   background-size: 28px 28px;
@@ -653,14 +650,12 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 /* ─── Home button ─── */
 #home-btn svg { width: 15px; height: 15px; }
 
-/* ─── PATCH: infinite canvas fix ─── */
-/* Canvas must be huge enough + dot grid always repeating */
+/* ─── PATCH: canvas — no background grid here, handled by container via JS ─── */
 #canvas {
   width: 12000px !important;
   height: 8000px !important;
-  background-image: radial-gradient(circle, var(--dot) 1px, transparent 1px) !important;
-  background-size: 28px 28px !important;
-  background-color: var(--bg) !important;
+  background-image: none !important;
+  background-color: transparent !important;
 }
 
 /* ─── PATCH: trigger redesign — matches mockup ─── */
@@ -673,8 +668,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
   gap: 0;
   cursor: pointer;
   z-index: 10;
-  /* remove old transform */
-  transform: none !important;
+  /* Center the trigger on its canvas coordinates */
+  transform: translate(-50%, -50%) !important;
 }
 
 .tr-title {
@@ -724,6 +719,11 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
   transform: scale(1.07);
   box-shadow: 0 6px 32px rgba(196,87,58,.55);
   background: var(--accent) !important;
+}
+
+/* Ensure trigger hover doesn't override the centering transform */
+#chat-trigger:hover {
+  transform: translate(-50%, -50%) !important;
 }
 
 .tr-text-main {
