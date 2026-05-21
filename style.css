@@ -564,3 +564,183 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 #chat-overlay, #chat-dialog, #chat-header, #chat-body,
 .ch-left, .ch-avatar, .ch-name, .ch-sub,
 #chat-input-row, #chat-messages { all: unset; display: none !important; }
+
+/* ─── Infinite canvas fix — background follows transform ─── */
+#canvas {
+  background-attachment: local;
+  /* Override: use pseudo-element trick for truly infinite dot grid */
+  background-image: radial-gradient(circle, var(--dot) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* The container itself also gets the dot pattern as fallback */
+#canvas-container {
+  background-image: radial-gradient(circle, var(--dot) 1px, transparent 1px);
+  background-size: 28px 28px;
+  background-color: var(--bg);
+}
+
+/* ─── Trigger redesign — like the mockup ─── */
+#chat-trigger {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  cursor: pointer;
+}
+
+.tr-title {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 22px;
+  color: var(--text);
+  margin-bottom: 4px;
+  text-align: center;
+  pointer-events: none;
+}
+
+.tr-powered {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  margin-bottom: 18px;
+  letter-spacing: 0.05em;
+  pointer-events: none;
+}
+
+.tr-circle-wrap {
+  position: relative;
+  width: 120px; height: 120px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 20px;
+}
+
+/* Rings now relative to circle-wrap */
+.tr-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1.5px solid var(--accent);
+  animation: tring 3s ease-out infinite;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+}
+.tr-r1 { width: 112px; height: 112px; opacity: .2; animation-delay: 0s; }
+.tr-r2 { width: 82px;  height: 82px;  opacity: .3; animation-delay: .8s; }
+
+.tr-core {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: var(--accent);
+  position: relative; z-index: 2;
+  transition: transform .2s, box-shadow .2s;
+  box-shadow: 0 4px 20px rgba(196,87,58,.35);
+}
+
+#chat-trigger:hover .tr-core {
+  transform: scale(1.08);
+  box-shadow: 0 6px 28px rgba(196,87,58,.5);
+}
+
+.tr-text-main {
+  font-family: var(--serif);
+  font-size: 26px;
+  color: var(--text);
+  text-align: center;
+  pointer-events: none;
+  letter-spacing: -0.01em;
+}
+
+/* ─── Home button ─── */
+#home-btn svg { width: 15px; height: 15px; }
+
+/* ─── PATCH: infinite canvas fix ─── */
+/* Canvas must be huge enough + dot grid always repeating */
+#canvas {
+  width: 12000px !important;
+  height: 8000px !important;
+  background-image: radial-gradient(circle, var(--dot) 1px, transparent 1px) !important;
+  background-size: 28px 28px !important;
+  background-color: var(--bg) !important;
+}
+
+/* ─── PATCH: trigger redesign — matches mockup ─── */
+#chat-trigger {
+  position: absolute;
+  left: 1000px; top: 560px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  cursor: pointer;
+  z-index: 10;
+  /* remove old transform */
+  transform: none !important;
+}
+
+.tr-title {
+  font-family: var(--serif);
+  font-size: 22px;
+  color: var(--text);
+  letter-spacing: -0.01em;
+  margin-bottom: 2px;
+  pointer-events: none;
+}
+
+.tr-powered {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  margin-bottom: 18px;
+  pointer-events: none;
+}
+
+.tr-circle-wrap {
+  position: relative;
+  width: 120px; height: 120px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 18px;
+}
+
+/* Move rings inside circle-wrap */
+.tr-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid var(--accent);
+  animation: tring 3s ease-out infinite;
+}
+.tr-r1 { width: 112px; height: 112px; opacity: .18; animation-delay: 0s; }
+.tr-r2 { width:  84px; height:  84px; opacity: .28; animation-delay: .7s; }
+
+.tr-core {
+  width: 56px; height: 56px;
+  background: var(--accent) !important;
+  border-radius: 50%;
+  position: relative; z-index: 2;
+  transition: transform .2s, box-shadow .2s;
+  box-shadow: 0 4px 24px rgba(196,87,58,.4);
+}
+
+#chat-trigger:hover .tr-core {
+  transform: scale(1.07);
+  box-shadow: 0 6px 32px rgba(196,87,58,.55);
+  background: var(--accent) !important;
+}
+
+.tr-text-main {
+  font-family: var(--serif);
+  font-size: 26px;
+  color: var(--text);
+  letter-spacing: -0.01em;
+  pointer-events: none;
+}
+
+.tr-text-sub { display: none; }
+.tr-text     { display: none; }
+.tr-label    { display: none; }
+
+/* ─── PATCH: chat toggle via trigger (open/close) ─── */
+/* handled in JS */
+
+/* ─── PATCH: home button ─── */
+#home-btn { color: var(--muted); }
+#home-btn:hover { color: var(--text); background: var(--panel2); }

@@ -134,7 +134,7 @@ function applyT() {
 (function initOffset() {
   const cw = container.clientWidth, ch = container.clientHeight;
   ox = cw / 2 - 1000 * sc;
-  oy = ch / 2 - 700 * sc;
+  oy = ch / 2 - 640 * sc;
   applyT();
 })();
 
@@ -172,6 +172,27 @@ document.querySelectorAll('.sb-btn[data-tip]').forEach(btn => {
     tooltip.style.top  = (e.clientY - 10) + 'px';
   });
   btn.addEventListener('mouseleave', () => tooltip.classList.remove('show'));
+});
+
+// ── Home button — recenter on trigger ────────────────────────────────────
+document.getElementById('home-btn').addEventListener('click', () => {
+  playClick();
+  const cw = container.clientWidth, ch = container.clientHeight;
+  // Animate to center — trigger is at canvas (1000, 560)
+  const targetOX = cw / 2 - 1000 * sc;
+  const targetOY = ch / 2 - 640 * sc;
+  const startOX = ox, startOY = oy;
+  const duration = 500;
+  const start = performance.now();
+  function animate(now) {
+    const t = Math.min((now - start) / duration, 1);
+    const ease = t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+    ox = startOX + (targetOX - startOX) * ease;
+    oy = startOY + (targetOY - startOY) * ease;
+    applyT();
+    if (t < 1) requestAnimationFrame(animate);
+  }
+  requestAnimationFrame(animate);
 });
 
 // ── Theme ─────────────────────────────────────────────────────────────────
@@ -354,16 +375,16 @@ const chatInput    = document.getElementById('chat-input');
 const chatSend     = document.getElementById('chat-send');
 
 document.getElementById('chat-trigger').addEventListener('click', () => {
-  chatOverlay.classList.remove('hidden');
-  chatInput.focus();
-  chatInput.select();
+  const isOpen = !chatOverlay.classList.contains('hidden');
+  if (isOpen) {
+    chatOverlay.classList.add('hidden');
+  } else {
+    chatOverlay.classList.remove('hidden');
+    chatInput.focus();
+  }
 });
 
-document.getElementById('chat-close').addEventListener('click', () => {
-  chatOverlay.classList.add('hidden');
-});
-
-// Close chat bar on Escape
+// Close chat bar on Escape or clicking outside
 window.addEventListener('keydown', e => {
   if (e.key === 'Escape') chatOverlay.classList.add('hidden');
 });
