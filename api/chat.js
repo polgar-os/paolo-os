@@ -2,7 +2,7 @@
 // La chiave Gemini non è mai nel codice — vive in Vercel > Settings > Environment Variables
 // Nome variabile: GEMINI_API_KEY
 
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${process.env.GEMINI_API_KEY}`;
 
 const SYSTEM = `You are an AI agent representing Paolo Garito, a Senior Service & Product Designer based in Milan, Italy. You are embedded in his portfolio website answering questions from recruiters and people curious about Paolo.
 
