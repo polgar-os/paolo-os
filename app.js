@@ -348,18 +348,24 @@ document.querySelectorAll('.sb-btn[data-section]').forEach(btn => {
 });
 
 // ── Chat ──────────────────────────────────────────────────────────────────
-const chatOverlay = document.getElementById('chat-overlay');
-const chatMessages = document.getElementById('chat-messages');
+const chatOverlay = document.getElementById('chat-bar');
+// chatMessages removed — no bubble UI
 const chatInput    = document.getElementById('chat-input');
 const chatSend     = document.getElementById('chat-send');
 
 document.getElementById('chat-trigger').addEventListener('click', () => {
   chatOverlay.classList.remove('hidden');
   chatInput.focus();
+  chatInput.select();
 });
 
 document.getElementById('chat-close').addEventListener('click', () => {
   chatOverlay.classList.add('hidden');
+});
+
+// Close chat bar on Escape
+window.addEventListener('keydown', e => {
+  if (e.key === 'Escape') chatOverlay.classList.add('hidden');
 });
 
 chatSend.addEventListener('click', sendMsg);
@@ -379,13 +385,12 @@ async function sendMsg() {
   chatInput.value = '';
   chatSend.disabled = true;
 
-  // Show loading, hide suggestions
+  // Show loading state
   const suggestions = document.getElementById('chat-suggestions');
   const loading = document.getElementById('chat-loading');
-  const loadingLabel = document.getElementById('chat-loading-label');
   if (suggestions) suggestions.style.display = 'none';
   if (loading) loading.classList.remove('hidden');
-  if (loadingLabel) loadingLabel.textContent = text.length > 50 ? text.slice(0, 50) + '…' : text;
+  chatSend.style.display = 'none';
 
   try {
     const parsed = await callGemini(text);
@@ -403,6 +408,7 @@ async function sendMsg() {
   } finally {
     if (loading) loading.classList.add('hidden');
     if (suggestions) suggestions.style.display = 'flex';
+    chatSend.style.display = 'flex';
     chatSend.disabled = false;
     chatInput.focus();
   }

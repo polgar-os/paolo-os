@@ -59,8 +59,10 @@
       <div id="chat-trigger">
         <div class="tr-ring tr-r1"></div>
         <div class="tr-ring tr-r2"></div>
-        <div class="tr-core">
-          <span class="tr-label">ask me<br>anything</span>
+        <div class="tr-core"></div>
+        <div class="tr-text">
+          <span class="tr-text-main">Ask me anything</span>
+          <span class="tr-text-sub">Paolo's AI agent</span>
         </div>
       </div>
 
@@ -103,39 +105,24 @@
   <!-- Zoom -->
   <div id="zoom-indicator">100%</div>
 
-  <!-- Chat dialog -->
-  <div id="chat-overlay" class="hidden">
-    <div id="chat-dialog">
-      <div id="chat-header">
-        <div class="ch-left">
-          <div class="ch-avatar">PG</div>
-          <div>
-            <div class="ch-name">Ask Paolo's agent</div>
-            <div class="ch-sub">answers appear on the canvas</div>
-          </div>
-        </div>
-        <button id="chat-close">✕</button>
-      </div>
-      <div id="chat-body">
-        <div id="chat-suggestions">
-          <button class="suggestion" data-q="Who is Paolo and what does he do?">Who is Paolo?</button>
-          <button class="suggestion" data-q="What are Paolo's main projects?">Main projects</button>
-          <button class="suggestion" data-q="How does Paolo work and what's his style?">How he works</button>
-          <button class="suggestion" data-q="What are Paolo's skills and certifications?">Skills</button>
-        </div>
-        <div id="chat-loading" class="hidden">
-          <div class="dots"><span></span><span></span><span></span></div>
-          <span id="chat-loading-label"></span>
-        </div>
-      </div>
-      <div id="chat-input-row">
-        <input type="text" id="chat-input" placeholder="Ask anything about Paolo…" autocomplete="off" />
-        <button id="chat-send">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-        </button>
-      </div>
-      <div id="chat-footer">AI-generated · answers land on the canvas</div>
+  <!-- Chat bar — anchored bottom center -->
+  <div id="chat-bar" class="hidden">
+    <div id="chat-suggestions">
+      <button class="suggestion" data-q="Who is Paolo and what does he do?">Who is Paolo?</button>
+      <button class="suggestion" data-q="What are Paolo's main projects?">Main projects</button>
+      <button class="suggestion" data-q="How does Paolo work and what's his style?">How he works</button>
+      <button class="suggestion" data-q="What are Paolo's skills and certifications?">Skills</button>
     </div>
+    <div id="chat-input-wrap">
+      <input type="text" id="chat-input" placeholder="Ask anything about Paolo…" autocomplete="off" />
+      <div id="chat-loading" class="hidden">
+        <div class="dots"><span></span><span></span><span></span></div>
+      </div>
+      <button id="chat-send">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+    <div id="chat-footer">AI · answers appear on the canvas · <button id="chat-close">dismiss</button></div>
   </div>
 
   <!-- Tooltip -->
