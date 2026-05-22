@@ -523,9 +523,12 @@ chatInput.addEventListener('keydown', e => {
 });
 
 // Auto-resize textarea
+const chatInputWrap = document.getElementById('chat-input-wrap');
 chatInput.addEventListener('input', () => {
   chatInput.style.height = 'auto';
   chatInput.style.height = chatInput.scrollHeight + 'px';
+  const singleLineH = parseInt(getComputedStyle(chatInput).lineHeight) * 1 + 0;
+  chatInputWrap.classList.toggle('is-multiline', chatInput.scrollHeight > 30);
 });
 
 // Suggestion chips
@@ -541,6 +544,7 @@ async function sendMsg() {
   if (!text) return;
   chatInput.value = '';
   chatInput.style.height = 'auto';
+  document.getElementById('chat-input-wrap').classList.remove('is-multiline');
   chatSend.disabled = true;
   resetChatTimer();
 

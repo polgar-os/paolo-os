@@ -1293,13 +1293,17 @@ body {
 
 #chat-input-wrap {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   gap: 8px;
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 14px;
   padding: 10px 10px 10px 16px;
   box-shadow: 0 4px 24px rgba(0, 0, 0, .1);
+}
+
+#chat-input-wrap.is-multiline {
+  align-items: flex-end;
 }
 
 #chat-input {
@@ -1317,8 +1321,9 @@ body {
   max-height: 160px;
   overflow-y: auto;
   line-height: 1.5;
-  caret-color: var(--accent);
+  caret-color: var(--text);
   display: block;
+  vertical-align: middle;
 }
 
 #chat-input::placeholder {
