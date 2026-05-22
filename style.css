@@ -1314,15 +1314,15 @@ body {
   font-size: 14px;
   color: var(--text);
   outline: none;
-  padding: 2px 0;
+  padding: 0;
+  margin: 0;
   resize: none;
   overflow-y: auto;
-  min-height: 24px;
+  height: 1.5em;
   max-height: 160px;
   line-height: 1.5;
   caret-color: var(--text);
   display: block;
-  vertical-align: middle;
 }
 
 #chat-input::placeholder {

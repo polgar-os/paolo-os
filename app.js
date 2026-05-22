@@ -478,16 +478,11 @@ function resetChatTimer() {
 
 function openChat() {
   chatOverlay.classList.remove('hidden', 'closing');
-  // Re-trigger entrance animation
   void chatOverlay.offsetWidth;
   chatOverlay.style.animation = 'none';
   void chatOverlay.offsetWidth;
   chatOverlay.style.animation = '';
-  // Force textarea to its natural scroll height so caret is never clipped
-  chatInput.style.height = 'auto';
-  requestAnimationFrame(() => {
-    chatInput.style.height = chatInput.scrollHeight + 'px';
-  });
+  chatInput.style.height = '';   // let CSS height: 1.5em take over
   chatInput.focus();
   resetChatTimer();
 }
@@ -532,7 +527,6 @@ const chatInputWrap = document.getElementById('chat-input-wrap');
 chatInput.addEventListener('input', () => {
   chatInput.style.height = 'auto';
   chatInput.style.height = chatInput.scrollHeight + 'px';
-  const singleLineH = parseInt(getComputedStyle(chatInput).lineHeight) * 1 + 0;
   chatInputWrap.classList.toggle('is-multiline', chatInput.scrollHeight > 30);
 });
 
@@ -548,10 +542,7 @@ async function sendMsg() {
   const text = chatInput.value.trim();
   if (!text) return;
   chatInput.value = '';
-  chatInput.style.height = 'auto';
-  requestAnimationFrame(() => {
-    chatInput.style.height = chatInput.scrollHeight + 'px';
-  });
+  chatInput.style.height = '';   // back to CSS height: 1.5em
   document.getElementById('chat-input-wrap').classList.remove('is-multiline');
   chatSend.disabled = true;
   resetChatTimer();
