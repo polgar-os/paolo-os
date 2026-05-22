@@ -1382,6 +1382,95 @@ body {
   animation: notice-out .16s ease-in both;
 }
 
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(26, 26, 24, .18);
+  animation: confirm-fade .16s ease-out both;
+}
+
+.confirm-overlay.hidden {
+  display: none;
+}
+
+.confirm-dialog {
+  width: min(360px, calc(100vw - 48px));
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--panel);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, .18);
+}
+
+.confirm-title {
+  font-family: var(--serif);
+  font-size: 24px;
+  line-height: 1.1;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.confirm-copy {
+  font-family: var(--sans);
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--mid);
+  margin-bottom: 18px;
+}
+
+.confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.confirm-btn {
+  height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 0 13px;
+  font-family: var(--mono);
+  font-size: 11px;
+  cursor: pointer;
+  transition: background .15s, color .15s, border-color .15s;
+}
+
+.confirm-secondary {
+  background: var(--panel);
+  color: var(--mid);
+}
+
+.confirm-secondary:hover {
+  background: var(--panel2);
+  color: var(--text);
+}
+
+.confirm-danger {
+  background: #C04030;
+  border-color: #C04030;
+  color: #fff;
+}
+
+.confirm-danger:hover {
+  background: #A93629;
+  border-color: #A93629;
+}
+
+@keyframes confirm-fade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
 @keyframes notice-in {
   from {
     opacity: 0;

@@ -232,10 +232,33 @@ document.getElementById('theme-btn').addEventListener('click', () => {
 });
 
 // ── Clear canvas ──────────────────────────────────────────────────────────
+const clearConfirm = document.getElementById('clear-confirm');
+const clearCancel = document.getElementById('clear-cancel');
+const clearConfirmBtn = document.getElementById('clear-confirm-btn');
+
+function openClearConfirm() {
+  clearConfirm.classList.remove('hidden');
+  clearConfirmBtn.focus();
+}
+
+function closeClearConfirm() {
+  clearConfirm.classList.add('hidden');
+}
+
 document.getElementById('clear-btn').addEventListener('click', () => {
+  openClearConfirm();
+});
+
+clearCancel.addEventListener('click', closeClearConfirm);
+clearConfirm.addEventListener('click', e => {
+  if (e.target === clearConfirm) closeClearConfirm();
+});
+
+clearConfirmBtn.addEventListener('click', () => {
   playTrash();
   document.getElementById('windows-layer').innerHTML = '';
   wi = 0;
+  closeClearConfirm();
 });
 
 // ── Sidebar sections → predefined windows ────────────────────────────────
@@ -769,6 +792,7 @@ document.getElementById('chat-trigger').addEventListener('click', () => {
 
 // Close chat bar on Escape
 window.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !clearConfirm.classList.contains('hidden')) closeClearConfirm();
   if (e.key === 'Escape' && !chatOverlay.classList.contains('hidden')) closeChat();
 });
 
