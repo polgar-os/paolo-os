@@ -345,13 +345,152 @@ const SECTION_DEFS = {
   }
 };
 
-// Spawn positions — spread across canvas around trigger
-const POSITIONS = [
-  [680, 520], [1340, 510], [670, 920], [1350, 900],
-  [680, 1120], [1340, 1120], [480, 720], [1540, 720],
-  [1010, 480], [1010, 1100], [480, 1050], [1540, 1050]
-];
+// Spawn windows in the visible canvas first; if crowded, place them nearby and pan to them.
 const ROTS = [-1.5, 1.2, -0.8, 2, -1, 0.6, -1.8, 1.5, -0.5, 1, -2, 0.8];
+const WINDOW_GAP = 28;
+
+function getSafeScreenBounds() {
+  const sidebar = document.getElementById('sidebar');
+  const sidebarRect = sidebar.getBoundingClientRect();
+  const chatBar = document.getElementById('chat-bar');
+  const chatOpen = chatBar && !chatBar.classList.contains('hidden');
+  return {
+    left: Math.max(24, sidebarRect.right + 24),
+    top: 24,
+    right: container.clientWidth - 24,
+    bottom: container.clientHeight - (chatOpen ? 132 : 24)
+  };
+}
+
+function screenToCanvasRect(rect) {
+  return {
+    left: (rect.left - ox) / sc,
+    top: (rect.top - oy) / sc,
+    right: (rect.right - ox) / sc,
+    bottom: (rect.bottom - oy) / sc
+  };
+}
+
+function getVisibleCanvasBounds() {
+  return screenToCanvasRect(getSafeScreenBounds());
+}
+
+function getWindowRects(exceptWin) {
+  return [...document.querySelectorAll('.cwin')]
+    .filter(win => win !== exceptWin)
+    .map(win => {
+      const left = parseFloat(win.style.left) || 0;
+      const top = parseFloat(win.style.top) || 0;
+      return {
+        left,
+        top,
+        right: left + win.offsetWidth,
+        bottom: top + win.offsetHeight
+      };
+    });
+}
+
+function rectsOverlap(a, b, gap = WINDOW_GAP) {
+  return !(
+    a.right + gap <= b.left ||
+    a.left >= b.right + gap ||
+    a.bottom + gap <= b.top ||
+    a.top >= b.bottom + gap
+  );
+}
+
+function rectIsFree(rect, others) {
+  return others.every(other => !rectsOverlap(rect, other));
+}
+
+function clampToCanvas(rect) {
+  const width = rect.right - rect.left;
+  const height = rect.bottom - rect.top;
+  const maxLeft = canvas.offsetWidth - width - 40;
+  const maxTop = canvas.offsetHeight - height - 40;
+  const left = Math.min(Math.max(rect.left, 40), Math.max(40, maxLeft));
+  const top = Math.min(Math.max(rect.top, 40), Math.max(40, maxTop));
+  return { left, top, right: left + width, bottom: top + height };
+}
+
+function findVisibleWindowPosition(width, height, others) {
+  const bounds = getVisibleCanvasBounds();
+  const minLeft = bounds.left;
+  const minTop = bounds.top;
+  const maxLeft = bounds.right - width;
+  const maxTop = bounds.bottom - height;
+  if (maxLeft < minLeft || maxTop < minTop) return null;
+
+  const centerX = (bounds.left + bounds.right - width) / 2;
+  const centerY = (bounds.top + bounds.bottom - height) / 2;
+  const candidates = [];
+  const step = 54;
+  const xs = [];
+  const ys = [];
+
+  for (let y = minTop; y <= maxTop; y += step) {
+    ys.push(y);
+  }
+  for (let x = minLeft; x <= maxLeft; x += step) {
+    xs.push(x);
+  }
+  xs.push(centerX, maxLeft);
+  ys.push(centerY, maxTop);
+
+  for (const y of ys) {
+    for (const x of xs) {
+      candidates.push({ left: x, top: y, right: x + width, bottom: y + height });
+    }
+  }
+
+  candidates.sort((a, b) => {
+    const da = Math.hypot(a.left - centerX, a.top - centerY);
+    const db = Math.hypot(b.left - centerX, b.top - centerY);
+    return da - db;
+  });
+
+  return candidates.find(rect => rectIsFree(rect, others)) || null;
+}
+
+function findOffscreenWindowPosition(width, height, others) {
+  const bounds = getVisibleCanvasBounds();
+  const centerX = (bounds.left + bounds.right) / 2;
+  const centerY = (bounds.top + bounds.bottom) / 2;
+
+  for (let radius = 180; radius <= 2600; radius += 120) {
+    for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 6) {
+      const left = centerX + Math.cos(angle) * radius - width / 2;
+      const top = centerY + Math.sin(angle) * radius - height / 2;
+      const rect = clampToCanvas({ left, top, right: left + width, bottom: top + height });
+      if (rectIsFree(rect, others)) return rect;
+    }
+  }
+
+  return clampToCanvas({
+    left: bounds.right + 80,
+    top: centerY - height / 2,
+    right: bounds.right + 80 + width,
+    bottom: centerY + height / 2
+  });
+}
+
+function centerCanvasOnRect(rect) {
+  const targetOX = container.clientWidth / 2 - ((rect.left + rect.right) / 2) * sc;
+  const targetOY = container.clientHeight / 2 - ((rect.top + rect.bottom) / 2) * sc;
+  const startOX = ox, startOY = oy;
+  const duration = 420;
+  const start = performance.now();
+
+  function animate(now) {
+    const t = Math.min((now - start) / duration, 1);
+    const ease = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+    ox = startOX + (targetOX - startOX) * ease;
+    oy = startOY + (targetOY - startOY) * ease;
+    applyT();
+    if (t < 1) requestAnimationFrame(animate);
+  }
+  requestAnimationFrame(animate);
+}
 
 function spawnWindow({ label, html, width, isAI, sectionId }) {
   const layer = document.getElementById('windows-layer');
@@ -359,15 +498,12 @@ function spawnWindow({ label, html, width, isAI, sectionId }) {
   win.className = 'cwin' + (isAI ? ' cwin-ai' : ' cwin-section');
   if (sectionId) win.dataset.section = sectionId;
 
-  const pos = POSITIONS[wi % POSITIONS.length];
   const rot = ROTS[wi % ROTS.length];
-  const jitter = wi * 20;
-  win.style.left = (pos[0] + (jitter % 60) - 30) + 'px';
-  win.style.top  = (pos[1] + (jitter % 40) - 20) + 'px';
+  win.style.left = '-9999px';
+  win.style.top  = '-9999px';
   win.style.transform = `rotate(${rot}deg)`;
   win.style.zIndex = wz++;
   if (width) win.style.width = width + 'px';
-  wi++;
 
   const bar = document.createElement('div');
   bar.className = 'cwin-bar';
@@ -381,8 +517,23 @@ function spawnWindow({ label, html, width, isAI, sectionId }) {
   win.appendChild(bar);
   win.appendChild(body);
   layer.appendChild(win);
+
+  const others = getWindowRects(win);
+  const winWidth = win.offsetWidth;
+  const winHeight = win.offsetHeight;
+  let shouldCenter = false;
+  let rect = findVisibleWindowPosition(winWidth, winHeight, others);
+  if (!rect) {
+    rect = findOffscreenWindowPosition(winWidth, winHeight, others);
+    shouldCenter = true;
+  }
+  win.style.left = rect.left + 'px';
+  win.style.top = rect.top + 'px';
+
   makeDraggable(win, bar);
   win.addEventListener('mousedown', () => win.style.zIndex = wz++);
+  if (shouldCenter) centerCanvasOnRect(rect);
+  wi++;
 }
 
 // Sidebar buttons
