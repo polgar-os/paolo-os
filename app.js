@@ -1,18 +1,18 @@
 /* ─── Paolo Garito Portfolio ─── */
 
 // ── Gemini system prompt ──────────────────────────────────────────────────
-const SYSTEM = `You are an AI agent representing Paolo Garito, a Senior Service & Product Designer based in Milan, Italy. You are embedded in his portfolio website answering questions from recruiters and people curious about Paolo.
+const SYSTEM = `You are an AI assistant embedded in Paolo Garito's portfolio website. You help recruiters and visitors learn about Paolo. You always speak about Paolo in the THIRD PERSON — never say "I" or "me" as if you are Paolo. Say "Paolo is", "Paolo has", "he works", etc.
 
 Respond ONLY with raw JSON (no markdown, no backticks, no preamble).
 
 Format:
 {
-  "chat": "2-3 sentence warm conversational reply for the chat UI",
+  "chat": "2-3 sentence warm conversational reply for the chat UI (always third person — Paolo is…, he…)",
   "title": "very short window title (4 words max)",
   "paragraphs": ["paragraph 1", "paragraph 2", ...]
 }
 
-Keep paragraphs focused and specific to the question. Use Paolo's voice — direct, curious, a bit witty. Max 3 paragraphs total.
+Keep paragraphs focused and specific to the question. Tone: warm, direct, a bit witty. Max 3 paragraphs total. Always third person.
 
 KNOWLEDGE BASE:
 
@@ -38,7 +38,7 @@ PERSONALITY: Second sport: surf. First: bouldering/climbing. Tools: Figma (exper
 
 CONTACT: garito.paolo@gmail.com — linkedin.com/in/paologarito
 
-RULES: Never invent info. If asked about Figma files, say they're available on request. Be warm and direct. Keep chat reply to 2-3 sentences. Paragraphs carry the detail.`;
+RULES: Never invent info. If asked about Figma files, say they are available on request. Always third person. Never use "I" or "me" as if you are Paolo. Keep chat reply to 2-3 sentences. Paragraphs carry the detail.`;
 
 // ── Gemini API call (via Vercel serverless — key is never in this file) ──
 let conversationHistory = [];
@@ -444,20 +444,51 @@ const chatOverlay = document.getElementById('chat-bar');
 const chatInput    = document.getElementById('chat-input');
 const chatSend     = document.getElementById('chat-send');
 
+// Auto-close timer (60s of inactivity)
+let chatCloseTimer = null;
+
+function resetChatTimer() {
+  clearTimeout(chatCloseTimer);
+  chatCloseTimer = setTimeout(closeChat, 60000);
+}
+
+function openChat() {
+  chatOverlay.classList.remove('hidden', 'closing');
+  // Re-trigger entrance animation
+  void chatOverlay.offsetWidth;
+  chatOverlay.style.animation = 'none';
+  void chatOverlay.offsetWidth;
+  chatOverlay.style.animation = '';
+  chatInput.focus();
+  resetChatTimer();
+}
+
+function closeChat() {
+  clearTimeout(chatCloseTimer);
+  chatOverlay.classList.add('closing');
+  chatOverlay.addEventListener('animationend', () => {
+    chatOverlay.classList.add('hidden');
+    chatOverlay.classList.remove('closing');
+  }, { once: true });
+}
+
 document.getElementById('chat-trigger').addEventListener('click', () => {
   const isOpen = !chatOverlay.classList.contains('hidden');
   if (isOpen) {
-    chatOverlay.classList.add('hidden');
+    closeChat();
   } else {
-    chatOverlay.classList.remove('hidden');
-    chatInput.focus();
+    openChat();
   }
 });
 
-// Close chat bar on Escape or clicking outside
+// Close chat bar on Escape
 window.addEventListener('keydown', e => {
-  if (e.key === 'Escape') chatOverlay.classList.add('hidden');
+  if (e.key === 'Escape' && !chatOverlay.classList.contains('hidden')) closeChat();
 });
+
+// Reset timer on any interaction inside the chat bar
+chatOverlay.addEventListener('mousedown', resetChatTimer);
+chatOverlay.addEventListener('keydown', resetChatTimer);
 
 chatSend.addEventListener('click', sendMsg);
 chatInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendMsg(); });
@@ -475,6 +506,7 @@ async function sendMsg() {
   if (!text) return;
   chatInput.value = '';
   chatSend.disabled = true;
+  resetChatTimer();
 
   // Show loading state
   const suggestions = document.getElementById('chat-suggestions');
@@ -490,12 +522,11 @@ async function sendMsg() {
     const html = (parsed.paragraphs || [parsed.chat]).map(p => `<p>${p}</p>`).join('');
     spawnWindow({ label: text, html, isAI: true });
 
-    // Close dialog after answer lands on canvas
-    chatOverlay.classList.add('hidden');
+    // Bar stays open — reset the inactivity timer
+    resetChatTimer();
 
   } catch (err) {
     console.error(err);
-    if (loadingLabel) loadingLabel.textContent = 'Error: ' + err.message;
   } finally {
     if (loading) loading.classList.add('hidden');
     if (suggestions) suggestions.style.display = 'flex';

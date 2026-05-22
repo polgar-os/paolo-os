@@ -1237,6 +1237,10 @@ body {
   display: none;
 }
 
+#chat-bar.closing {
+  animation: bar-fall .22s cubic-bezier(.36, 0, .66, -0.56) both;
+}
+
 @keyframes bar-rise {
   from {
     opacity: 0;
@@ -1246,6 +1250,18 @@ body {
   to {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes bar-fall {
+  from {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(-50%) translateY(16px);
   }
 }
 
