@@ -1613,6 +1613,15 @@ body {
   pointer-events: none;
 }
 
+.tr-hint {
+  margin-top: 5px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.03em;
+  pointer-events: none;
+}
+
 .tr-text-sub {
   display: none;
 }
