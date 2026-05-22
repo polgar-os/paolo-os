@@ -483,8 +483,11 @@ function openChat() {
   chatOverlay.style.animation = 'none';
   void chatOverlay.offsetWidth;
   chatOverlay.style.animation = '';
-  // Reset textarea to single line
+  // Force textarea to its natural scroll height so caret is never clipped
   chatInput.style.height = 'auto';
+  requestAnimationFrame(() => {
+    chatInput.style.height = chatInput.scrollHeight + 'px';
+  });
   chatInput.focus();
   resetChatTimer();
 }
@@ -546,6 +549,9 @@ async function sendMsg() {
   if (!text) return;
   chatInput.value = '';
   chatInput.style.height = 'auto';
+  requestAnimationFrame(() => {
+    chatInput.style.height = chatInput.scrollHeight + 'px';
+  });
   document.getElementById('chat-input-wrap').classList.remove('is-multiline');
   chatSend.disabled = true;
   resetChatTimer();
