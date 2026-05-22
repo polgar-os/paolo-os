@@ -482,7 +482,12 @@ function openChat() {
   chatOverlay.style.animation = 'none';
   void chatOverlay.offsetWidth;
   chatOverlay.style.animation = '';
-  chatInput.style.height = '';   // let CSS height: 1.5em take over
+  // Measure real single-line height once after first render
+  if (!singleLineHeight) {
+    chatInput.style.height = '';
+    singleLineHeight = chatInput.scrollHeight;
+    chatInput.style.height = singleLineHeight + 'px';
+  }
   chatInput.focus();
   resetChatTimer();
 }
@@ -524,12 +529,14 @@ chatInput.addEventListener('keydown', e => {
 
 // Auto-resize textarea
 const chatInputWrap = document.getElementById('chat-input-wrap');
+let singleLineHeight = 0;
+
 chatInput.addEventListener('input', () => {
-  chatInput.style.height = 'auto';
+  chatInput.style.height = singleLineHeight + 'px';
   const h = chatInput.scrollHeight;
   chatInput.style.height = Math.min(h, 160) + 'px';
   chatInput.style.overflowY = h > 160 ? 'auto' : 'hidden';
-  chatInputWrap.classList.toggle('is-multiline', h > 24);
+  chatInputWrap.classList.toggle('is-multiline', h > singleLineHeight + 4);
 });
 
 // Suggestion chips
@@ -544,7 +551,8 @@ async function sendMsg() {
   const text = chatInput.value.trim();
   if (!text) return;
   chatInput.value = '';
-  chatInput.style.height = '';   // back to CSS height: 1.5em
+  chatInput.style.height = singleLineHeight + 'px';
+  chatInput.style.overflowY = 'hidden';
   document.getElementById('chat-input-wrap').classList.remove('is-multiline');
   chatSend.disabled = true;
   resetChatTimer();
