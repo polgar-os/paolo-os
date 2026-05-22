@@ -1,49 +1,9 @@
 /* ─── Paolo Garito Portfolio ─── */
 
-// ── Gemini system prompt ──────────────────────────────────────────────────
-const SYSTEM = `You are an AI assistant embedded in Paolo Garito's portfolio website. You help recruiters and visitors learn about Paolo. You always speak about Paolo in the THIRD PERSON — never say "I" or "me" as if you are Paolo. Say "Paolo is", "Paolo has", "he works", etc.
-
-Respond ONLY with raw JSON (no markdown, no backticks, no preamble).
-
-Format:
-{
-  "chat": "2-3 sentence warm conversational reply for the chat UI (always third person — Paolo is…, he…)",
-  "title": "very short window title (4 words max)",
-  "paragraphs": ["paragraph 1", "paragraph 2", ...]
-}
-
-Keep paragraphs focused and specific to the question. Tone: warm, direct, a bit witty. Max 3 paragraphs total. Always third person.
-
-KNOWLEDGE BASE:
-
-IDENTITY: Paolo Garito. Italian, Milan. "Unconventional engineer" — started as management engineer, became service & product designer. 6+ years experience. Italian (native), English (fluent), Spanish (conversational). Colleagues say: "open-minded creative", "always eager to try something new", "observant and meticulous", "a discussion partner", "always ready for a laugh".
-
-CURRENT: Senior Service Designer & Digital Innovation Advisor at avvale (2023–present).
-
-PAST: Sustainability Strategist & Facilitator at Techedge Italy (2021–2022). Service Designer & Digital Innovation Advisor at Techedge Italy (2019–2023). Founder arrampico.male (2022–present).
-
-EDUCATION: Master II Blockchain Project Lead (MasterZ). Master Blockchain & Web3 Technologies (MasterZ). MSc Digital Business & Innovation (Politecnico di Milano). Executive Master Strategy for Emerging Countries (IBS Brazil). Bachelor Management Engineering (Politecnico di Milano).
-
-CERTIFICATIONS: Vibecoding for Designers 2025 (Lovable & Uxcel). McKinsey Forward Program 2024. Enterprise Design Thinking Co-creator 2021 (IBM). Scrum Master PSM I 2020 (Scrum.org). Automation Business Analyst 2020 (UiPath). Industry 4.0 Digital Twining 2019 (Bucharest Polytechnic).
-
-MAIN PROJECTS: 1) AI in Public Sector 2024-2025. 2) Intelligent Asset Management Platform 2023-2024. 3) Business Model & Identity Re-design 2024-2025. 4) Notar.ESG Documents Notarization Platform 2022-2023. 5) E2E Sales Platform 2021-2022.
-
-OTHER PROJECTS: Flights & Capacity Platform Improvement (Alpitour, 2025, Lead Designer). Refinery Commercial App (Saras S.p.A., 2022, UX Designer). Coffee machines experience re-design (Rhea coffee, 2023-2024, Service Designer). Energy Monitoring Platform (E.ON Energy, 2021, UX Designer). Data Department Intranet & Intraverse (BPER Bank, 2023, Lead Designer). Intelligent Automations (various companies 2020-2022, Automation PM).
-
-SIDE PROJECT: arrampico.male — climbing community founded 2022. Website + Instagram community. Real passion project.
-
-HOW HE WORKS: Loves direct communication (no abstract talk). Asks tons of questions to frame problems. Visual learner — visualize it and he gets it immediately. Works well both independently and in international teams. Hates micromanaging.
-
-PERSONALITY: Second sport: surf. First: bouldering/climbing. Tools: Figma (expert), Miro (expert), Framer (advanced), Claude/AI (advanced), Lovable (intermediate), Notion (advanced), HTML/CSS (intermediate), Python (beginner). Traits: curious, systems thinker, builder, anti-micromanagement, direct communicator, visual learner, loves espresso.
-
-CONTACT: garito.paolo@gmail.com — linkedin.com/in/paologarito
-
-RULES: Never invent info. If asked about Figma files, say they are available on request. Always third person. Never use "I" or "me" as if you are Paolo. Keep chat reply to 2-3 sentences. Paragraphs carry the detail.`;
-
-// ── Gemini API call (via Vercel serverless — key is never in this file) ──
+// ── AI API call (via Vercel serverless — key is never in this file) ──
 let conversationHistory = [];
 
-async function callGemini(userMsg) {
+async function callAI(userMsg) {
   conversationHistory.push({ role: 'user', parts: [{ text: userMsg }] });
 
   const body = {
@@ -60,18 +20,18 @@ async function callGemini(userMsg) {
   if (!res.ok) {
     const errData = await res.json().catch(() => ({}));
     const msg = errData?.error?.message || res.statusText;
-    console.error('Gemini HTTP error', res.status, msg, errData);
-    throw new Error(`Gemini ${res.status}: ${msg}`);
+    console.error('AI HTTP error', res.status, msg, errData);
+    throw new Error(`AI ${res.status}: ${msg}`);
   }
 
   const data = await res.json();
-  console.log('Gemini raw response:', JSON.stringify(data, null, 2));
+  console.log('AI raw response:', JSON.stringify(data, null, 2));
 
-  // Gemini sometimes wraps in ```json ... ``` despite instructions
+  // Models sometimes wrap in ```json ... ``` despite instructions
   let raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
   if (!raw) {
-    console.error('No text in Gemini response:', data);
-    throw new Error('Risposta vuota da Gemini — riprova.');
+    console.error('No text in AI response:', data);
+    throw new Error('Risposta vuota dall\'AI — riprova.');
   }
 
   conversationHistory.push({ role: 'model', parts: [{ text: raw }] });
@@ -95,11 +55,23 @@ async function callGemini(userMsg) {
   }
 
   // Ensure required fields always exist
-  parsed.chat       = parsed.chat       || parsed.paragraphs?.[0] || raw.slice(0, 200);
-  parsed.title      = parsed.title      || 'Note';
-  parsed.paragraphs = parsed.paragraphs || [parsed.chat];
+  parsed.intent = parsed.intent || 'portfolio';
+  parsed.display = parsed.display === 'notice' ? 'notice' : 'canvas_window';
+  parsed.chat = parsed.chat || parsed.paragraphs?.[0] || raw.slice(0, 200);
+  parsed.title = parsed.title || 'Note';
+  parsed.paragraphs = Array.isArray(parsed.paragraphs) ? parsed.paragraphs : [parsed.chat];
+  parsed.contactRecommended = Boolean(parsed.contactRecommended);
 
   return parsed;
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 // ── Sound ─────────────────────────────────────────────────────────────────
@@ -404,7 +376,7 @@ function spawnWindow({ label, html, width, isAI, sectionId }) {
 
   const bar = document.createElement('div');
   bar.className = 'cwin-bar';
-  bar.innerHTML = `<span class="cwin-label">${label}</span><button class="cwin-close">✕</button>`;
+  bar.innerHTML = `<span class="cwin-label">${escapeHtml(label)}</span><button class="cwin-close">✕</button>`;
   bar.querySelector('.cwin-close').addEventListener('click', () => win.remove());
 
   const body = document.createElement('div');
@@ -464,12 +436,29 @@ document.querySelectorAll('.sb-btn[data-section]').forEach(btn => {
 
 // ── Chat ──────────────────────────────────────────────────────────────────
 const chatOverlay = document.getElementById('chat-bar');
-// chatMessages removed — no bubble UI
 const chatInput    = document.getElementById('chat-input');
 const chatSend     = document.getElementById('chat-send');
 
 // Auto-close timer (60s of inactivity)
 let chatCloseTimer = null;
+let noticeTimer = null;
+
+function showNotice(message) {
+  const existing = document.querySelector('.chat-notice');
+  if (existing) existing.remove();
+
+  const notice = document.createElement('div');
+  notice.className = 'chat-notice';
+  notice.textContent = message;
+  document.body.appendChild(notice);
+  playError();
+
+  clearTimeout(noticeTimer);
+  noticeTimer = setTimeout(() => {
+    notice.classList.add('is-leaving');
+    notice.addEventListener('animationend', () => notice.remove(), { once: true });
+  }, 4200);
+}
 
 function resetChatTimer() {
   clearTimeout(chatCloseTimer);
@@ -539,14 +528,6 @@ chatInput.addEventListener('input', () => {
   chatInputWrap.classList.toggle('is-multiline', h > singleLineHeight + 4);
 });
 
-// Suggestion chips
-document.querySelectorAll('.suggestion').forEach(btn => {
-  btn.addEventListener('click', () => {
-    chatInput.value = btn.dataset.q;
-    sendMsg();
-  });
-});
-
 async function sendMsg() {
   const text = chatInput.value.trim();
   if (!text) return;
@@ -558,49 +539,34 @@ async function sendMsg() {
   resetChatTimer();
 
   // Show loading state
-  const suggestions = document.getElementById('chat-suggestions');
   const loading = document.getElementById('chat-loading');
-  if (suggestions) suggestions.style.display = 'none';
   if (loading) loading.classList.remove('hidden');
   chatSend.style.display = 'none';
 
   try {
-    const parsed = await callGemini(text);
+    const parsed = await callAI(text);
 
-    // Build free-form window — title is the question
-    const html = (parsed.paragraphs || [parsed.chat]).map(p => `<p>${p}</p>`).join('');
-    spawnWindow({ label: text, html, isAI: true });
+    if (parsed.display === 'notice') {
+      showNotice(parsed.chat || parsed.paragraphs?.[0] || 'This question is not relevant to Paolo\'s portfolio.');
+    } else {
+      const html = (parsed.paragraphs || [parsed.chat])
+        .map(p => `<p>${escapeHtml(p)}</p>`)
+        .join('');
+      spawnWindow({ label: parsed.title || text, html, isAI: true });
+    }
 
     // Bar stays open — reset the inactivity timer
     resetChatTimer();
 
   } catch (err) {
     console.error(err);
+    showNotice('Something went wrong while answering. Please try again in a moment.');
   } finally {
     if (loading) loading.classList.add('hidden');
-    if (suggestions) suggestions.style.display = 'flex';
     chatSend.style.display = 'flex';
     chatSend.disabled = false;
     chatInput.focus();
   }
-}
-
-function appendMsg(cls, text) {
-  const d = document.createElement('div');
-  d.className = 'msg ' + cls;
-  d.innerHTML = `<div class="msg-bubble">${text}</div>`;
-  chatMessages.appendChild(d);
-  chatMessages.scrollTop = chatMessages.scrollHeight;
-  return d;
-}
-
-function appendTyping() {
-  const d = document.createElement('div');
-  d.className = 'msg msg-agent msg-typing';
-  d.innerHTML = '<div class="msg-bubble"><div class="dots"><span></span><span></span><span></span></div></div>';
-  chatMessages.appendChild(d);
-  chatMessages.scrollTop = chatMessages.scrollHeight;
-  return d;
 }
 
 // ── Draggable ─────────────────────────────────────────────────────────────
