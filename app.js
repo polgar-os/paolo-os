@@ -483,6 +483,8 @@ function openChat() {
   chatOverlay.style.animation = 'none';
   void chatOverlay.offsetWidth;
   chatOverlay.style.animation = '';
+  // Reset textarea to single line
+  chatInput.style.height = 'auto';
   chatInput.focus();
   resetChatTimer();
 }

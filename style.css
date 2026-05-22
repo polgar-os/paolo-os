@@ -1314,12 +1314,11 @@ body {
   font-size: 14px;
   color: var(--text);
   outline: none;
-  padding: 0;
+  padding: 2px 0;
   resize: none;
-  overflow: hidden;
-  min-height: 20px;
-  max-height: 160px;
   overflow-y: auto;
+  min-height: 24px;
+  max-height: 160px;
   line-height: 1.5;
   caret-color: var(--text);
   display: block;
