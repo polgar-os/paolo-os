@@ -1,49 +1,9 @@
 /* ─── Paolo Garito Portfolio ─── */
 
-// ── Gemini system prompt ──────────────────────────────────────────────────
-const SYSTEM = `You are an AI assistant embedded in Paolo Garito's portfolio website. You help recruiters and visitors learn about Paolo. You always speak about Paolo in the THIRD PERSON — never say "I" or "me" as if you are Paolo. Say "Paolo is", "Paolo has", "he works", etc.
-
-Respond ONLY with raw JSON (no markdown, no backticks, no preamble).
-
-Format:
-{
-  "chat": "2-3 sentence warm conversational reply for the chat UI (always third person — Paolo is…, he…)",
-  "title": "very short window title (4 words max)",
-  "paragraphs": ["paragraph 1", "paragraph 2", ...]
-}
-
-Keep paragraphs focused and specific to the question. Tone: warm, direct, a bit witty. Max 3 paragraphs total. Always third person.
-
-KNOWLEDGE BASE:
-
-IDENTITY: Paolo Garito. Italian, Milan. "Unconventional engineer" — started as management engineer, became service & product designer. 6+ years experience. Italian (native), English (fluent), Spanish (conversational). Colleagues say: "open-minded creative", "always eager to try something new", "observant and meticulous", "a discussion partner", "always ready for a laugh".
-
-CURRENT: Senior Service Designer & Digital Innovation Advisor at avvale (2023–present).
-
-PAST: Sustainability Strategist & Facilitator at Techedge Italy (2021–2022). Service Designer & Digital Innovation Advisor at Techedge Italy (2019–2023). Founder arrampico.male (2022–present).
-
-EDUCATION: Master II Blockchain Project Lead (MasterZ). Master Blockchain & Web3 Technologies (MasterZ). MSc Digital Business & Innovation (Politecnico di Milano). Executive Master Strategy for Emerging Countries (IBS Brazil). Bachelor Management Engineering (Politecnico di Milano).
-
-CERTIFICATIONS: Vibecoding for Designers 2025 (Lovable & Uxcel). McKinsey Forward Program 2024. Enterprise Design Thinking Co-creator 2021 (IBM). Scrum Master PSM I 2020 (Scrum.org). Automation Business Analyst 2020 (UiPath). Industry 4.0 Digital Twining 2019 (Bucharest Polytechnic).
-
-MAIN PROJECTS: 1) AI in Public Sector 2024-2025. 2) Intelligent Asset Management Platform 2023-2024. 3) Business Model & Identity Re-design 2024-2025. 4) Notar.ESG Documents Notarization Platform 2022-2023. 5) E2E Sales Platform 2021-2022.
-
-OTHER PROJECTS: Flights & Capacity Platform Improvement (Alpitour, 2025, Lead Designer). Refinery Commercial App (Saras S.p.A., 2022, UX Designer). Coffee machines experience re-design (Rhea coffee, 2023-2024, Service Designer). Energy Monitoring Platform (E.ON Energy, 2021, UX Designer). Data Department Intranet & Intraverse (BPER Bank, 2023, Lead Designer). Intelligent Automations (various companies 2020-2022, Automation PM).
-
-SIDE PROJECT: arrampico.male — climbing community founded 2022. Website + Instagram community. Real passion project.
-
-HOW HE WORKS: Loves direct communication (no abstract talk). Asks tons of questions to frame problems. Visual learner — visualize it and he gets it immediately. Works well both independently and in international teams. Hates micromanaging.
-
-PERSONALITY: Second sport: surf. First: bouldering/climbing. Tools: Figma (expert), Miro (expert), Framer (advanced), Claude/AI (advanced), Lovable (intermediate), Notion (advanced), HTML/CSS (intermediate), Python (beginner). Traits: curious, systems thinker, builder, anti-micromanagement, direct communicator, visual learner, loves espresso.
-
-CONTACT: garito.paolo@gmail.com — linkedin.com/in/paologarito
-
-RULES: Never invent info. If asked about Figma files, say they are available on request. Always third person. Never use "I" or "me" as if you are Paolo. Keep chat reply to 2-3 sentences. Paragraphs carry the detail.`;
-
-// ── Gemini API call (via Vercel serverless — key is never in this file) ──
+// ── AI API call (via Vercel serverless — key is never in this file) ──
 let conversationHistory = [];
 
-async function callGemini(userMsg) {
+async function callAI(userMsg) {
   conversationHistory.push({ role: 'user', parts: [{ text: userMsg }] });
 
   const body = {
@@ -60,18 +20,18 @@ async function callGemini(userMsg) {
   if (!res.ok) {
     const errData = await res.json().catch(() => ({}));
     const msg = errData?.error?.message || res.statusText;
-    console.error('Gemini HTTP error', res.status, msg, errData);
-    throw new Error(`Gemini ${res.status}: ${msg}`);
+    console.error('AI HTTP error', res.status, msg, errData);
+    throw new Error(`AI ${res.status}: ${msg}`);
   }
 
   const data = await res.json();
-  console.log('Gemini raw response:', JSON.stringify(data, null, 2));
+  console.log('AI raw response:', JSON.stringify(data, null, 2));
 
-  // Gemini sometimes wraps in ```json ... ``` despite instructions
+  // Models sometimes wrap in ```json ... ``` despite instructions
   let raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
   if (!raw) {
-    console.error('No text in Gemini response:', data);
-    throw new Error('Risposta vuota da Gemini — riprova.');
+    console.error('No text in AI response:', data);
+    throw new Error('Risposta vuota dall\'AI — riprova.');
   }
 
   conversationHistory.push({ role: 'model', parts: [{ text: raw }] });
@@ -95,25 +55,32 @@ async function callGemini(userMsg) {
   }
 
   // Ensure required fields always exist
-  parsed.chat       = parsed.chat       || parsed.paragraphs?.[0] || raw.slice(0, 200);
-  parsed.title      = parsed.title      || 'Note';
-  parsed.paragraphs = parsed.paragraphs || [parsed.chat];
+  parsed.intent = parsed.intent || 'portfolio';
+  parsed.display = parsed.display === 'notice' ? 'notice' : 'canvas_window';
+  parsed.chat = parsed.chat || parsed.paragraphs?.[0] || raw.slice(0, 200);
+  parsed.title = parsed.title || 'Note';
+  parsed.paragraphs = Array.isArray(parsed.paragraphs) ? parsed.paragraphs : [parsed.chat];
+  parsed.contactRecommended = Boolean(parsed.contactRecommended);
 
   return parsed;
 }
 
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 // ── Sound ─────────────────────────────────────────────────────────────────
+const interfaceClickAudio = new Audio('assets/interface-click.m4a');
+interfaceClickAudio.volume = 0.15;
 function playClick() {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const o = ctx.createOscillator();
-    const g = ctx.createGain();
-    o.connect(g); g.connect(ctx.destination);
-    o.type = 'sine'; o.frequency.setValueAtTime(800, ctx.currentTime);
-    o.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.08);
-    g.gain.setValueAtTime(0.15, ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
-    o.start(); o.stop(ctx.currentTime + 0.12);
+    interfaceClickAudio.currentTime = 0;
+    interfaceClickAudio.play().catch(e => console.log('Interface click audio failed', e));
   } catch(e) {}
 }
 
@@ -378,33 +345,291 @@ const SECTION_DEFS = {
   }
 };
 
-// Spawn positions — spread across canvas around trigger
-const POSITIONS = [
-  [680, 520], [1340, 510], [670, 920], [1350, 900],
-  [680, 1120], [1340, 1120], [480, 720], [1540, 720],
-  [1010, 480], [1010, 1100], [480, 1050], [1540, 1050]
-];
+// Spawn windows in the visible canvas first; if crowded, place them nearby and pan to them.
 const ROTS = [-1.5, 1.2, -0.8, 2, -1, 0.6, -1.8, 1.5, -0.5, 1, -2, 0.8];
+const WINDOW_GAP = 28;
+
+function getSafeScreenBounds() {
+  const sidebar = document.getElementById('sidebar');
+  const sidebarRect = sidebar.getBoundingClientRect();
+  const chatBar = document.getElementById('chat-bar');
+  const chatOpen = chatBar && !chatBar.classList.contains('hidden');
+  return {
+    left: Math.max(24, sidebarRect.right + 24),
+    top: 24,
+    right: container.clientWidth - 24,
+    bottom: container.clientHeight - (chatOpen ? 132 : 24)
+  };
+}
+
+function screenToCanvasRect(rect) {
+  return {
+    left: (rect.left - ox) / sc,
+    top: (rect.top - oy) / sc,
+    right: (rect.right - ox) / sc,
+    bottom: (rect.bottom - oy) / sc
+  };
+}
+
+function expandRect(rect, amount) {
+  return {
+    left: rect.left - amount,
+    top: rect.top - amount,
+    right: rect.right + amount,
+    bottom: rect.bottom + amount
+  };
+}
+
+function getVisibleCanvasBounds() {
+  return screenToCanvasRect(getSafeScreenBounds());
+}
+
+function getTriggerReservedRect() {
+  const trigger = document.getElementById('chat-trigger');
+  if (!trigger) return null;
+  const rect = screenToCanvasRect(trigger.getBoundingClientRect());
+  return expandRect(rect, 24 / sc);
+}
+
+function getWindowRects(exceptWin) {
+  return [...document.querySelectorAll('.cwin')]
+    .filter(win => win !== exceptWin)
+    .map(win => {
+      const left = parseFloat(win.style.left) || 0;
+      const top = parseFloat(win.style.top) || 0;
+      return {
+        left,
+        top,
+        right: left + win.offsetWidth,
+        bottom: top + win.offsetHeight
+      };
+    });
+}
+
+function rectsOverlap(a, b, gap = WINDOW_GAP) {
+  return !(
+    a.right + gap <= b.left ||
+    a.left >= b.right + gap ||
+    a.bottom + gap <= b.top ||
+    a.top >= b.bottom + gap
+  );
+}
+
+function rectIsFree(rect, others) {
+  return others.every(other => !rectsOverlap(rect, other));
+}
+
+function getBlockedRects(exceptWin) {
+  const triggerRect = getTriggerReservedRect();
+  return [
+    ...getWindowRects(exceptWin),
+    ...(triggerRect ? [triggerRect] : [])
+  ];
+}
+
+function clampToCanvas(rect) {
+  const width = rect.right - rect.left;
+  const height = rect.bottom - rect.top;
+  const maxLeft = canvas.offsetWidth - width - 40;
+  const maxTop = canvas.offsetHeight - height - 40;
+  const left = Math.min(Math.max(rect.left, 40), Math.max(40, maxLeft));
+  const top = Math.min(Math.max(rect.top, 40), Math.max(40, maxTop));
+  return { left, top, right: left + width, bottom: top + height };
+}
+
+function findVisibleWindowPosition(width, height, others) {
+  const bounds = getVisibleCanvasBounds();
+  const minLeft = bounds.left;
+  const minTop = bounds.top;
+  const maxLeft = bounds.right - width;
+  const maxTop = bounds.bottom - height;
+  if (maxLeft < minLeft || maxTop < minTop) return null;
+
+  const centerX = (bounds.left + bounds.right - width) / 2;
+  const centerY = (bounds.top + bounds.bottom - height) / 2;
+  const candidates = [];
+  const step = 54;
+  const xs = [];
+  const ys = [];
+
+  for (let y = minTop; y <= maxTop; y += step) {
+    ys.push(y);
+  }
+  for (let x = minLeft; x <= maxLeft; x += step) {
+    xs.push(x);
+  }
+  xs.push(centerX, maxLeft);
+  ys.push(centerY, maxTop);
+
+  for (const y of ys) {
+    for (const x of xs) {
+      candidates.push({ left: x, top: y, right: x + width, bottom: y + height });
+    }
+  }
+
+  candidates.sort((a, b) => {
+    const da = Math.hypot(a.left - centerX, a.top - centerY);
+    const db = Math.hypot(b.left - centerX, b.top - centerY);
+    return da - db;
+  });
+
+  return candidates.find(rect => rectIsFree(rect, others)) || null;
+}
+
+function findOffscreenWindowPosition(width, height, others) {
+  const bounds = getVisibleCanvasBounds();
+  const centerX = (bounds.left + bounds.right) / 2;
+  const centerY = (bounds.top + bounds.bottom) / 2;
+
+  for (let radius = 180; radius <= 2600; radius += 120) {
+    for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 6) {
+      const left = centerX + Math.cos(angle) * radius - width / 2;
+      const top = centerY + Math.sin(angle) * radius - height / 2;
+      const rect = clampToCanvas({ left, top, right: left + width, bottom: top + height });
+      if (rectIsFree(rect, others)) return rect;
+    }
+  }
+
+  return clampToCanvas({
+    left: bounds.right + 80,
+    top: centerY - height / 2,
+    right: bounds.right + 80 + width,
+    bottom: centerY + height / 2
+  });
+}
+
+function centerCanvasOnRect(rect) {
+  const targetOX = container.clientWidth / 2 - ((rect.left + rect.right) / 2) * sc;
+  const targetOY = container.clientHeight / 2 - ((rect.top + rect.bottom) / 2) * sc;
+  const startOX = ox, startOY = oy;
+  const duration = 420;
+  const start = performance.now();
+
+  function animate(now) {
+    const t = Math.min((now - start) / duration, 1);
+    const ease = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+    ox = startOX + (targetOX - startOX) * ease;
+    oy = startOY + (targetOY - startOY) * ease;
+    applyT();
+    if (t < 1) requestAnimationFrame(animate);
+  }
+  requestAnimationFrame(animate);
+}
+
+function getWindowRect(win) {
+  const left = parseFloat(win.style.left) || 0;
+  const top = parseFloat(win.style.top) || 0;
+  return {
+    left,
+    top,
+    right: left + win.offsetWidth,
+    bottom: top + win.offsetHeight
+  };
+}
+
+function animateWindowToRect(win, rect) {
+  const start = getWindowRect(win);
+  const duration = 260;
+  const startedAt = performance.now();
+
+  function animate(now) {
+    const t = Math.min((now - startedAt) / duration, 1);
+    const ease = 1 - Math.pow(1 - t, 3);
+    win.style.left = (start.left + (rect.left - start.left) * ease) + 'px';
+    win.style.top = (start.top + (rect.top - start.top) * ease) + 'px';
+    if (t < 1) requestAnimationFrame(animate);
+  }
+  requestAnimationFrame(animate);
+}
+
+function findTriggerEscapeRect(win, originRect) {
+  const triggerRect = getTriggerReservedRect();
+  if (!triggerRect) return null;
+
+  const current = getWindowRect(win);
+  if (!rectsOverlap(current, triggerRect, 0)) return null;
+
+  const width = current.right - current.left;
+  const height = current.bottom - current.top;
+  const triggerCenter = {
+    x: (triggerRect.left + triggerRect.right) / 2,
+    y: (triggerRect.top + triggerRect.bottom) / 2
+  };
+  const originCenter = {
+    x: (originRect.left + originRect.right) / 2,
+    y: (originRect.top + originRect.bottom) / 2
+  };
+  let vx = originCenter.x - triggerCenter.x;
+  let vy = originCenter.y - triggerCenter.y;
+  if (Math.abs(vx) + Math.abs(vy) < 1) {
+    vx = ((current.left + current.right) / 2) - triggerCenter.x;
+    vy = ((current.top + current.bottom) / 2) - triggerCenter.y;
+  }
+  if (Math.abs(vx) + Math.abs(vy) < 1) vx = 1;
+
+  const sides = [
+    {
+      name: 'right',
+      score: vx >= 0 ? 0 : 1,
+      rect: { left: triggerRect.right + WINDOW_GAP, top: current.top, right: triggerRect.right + WINDOW_GAP + width, bottom: current.top + height }
+    },
+    {
+      name: 'left',
+      score: vx < 0 ? 0 : 1,
+      rect: { left: triggerRect.left - WINDOW_GAP - width, top: current.top, right: triggerRect.left - WINDOW_GAP, bottom: current.top + height }
+    },
+    {
+      name: 'bottom',
+      score: vy >= 0 ? 0 : 1,
+      rect: { left: current.left, top: triggerRect.bottom + WINDOW_GAP, right: current.left + width, bottom: triggerRect.bottom + WINDOW_GAP + height }
+    },
+    {
+      name: 'top',
+      score: vy < 0 ? 0 : 1,
+      rect: { left: current.left, top: triggerRect.top - WINDOW_GAP - height, right: current.left + width, bottom: triggerRect.top - WINDOW_GAP }
+    }
+  ];
+
+  const blocked = getBlockedRects(win);
+  const candidates = [];
+  for (const side of sides) {
+    const base = side.rect;
+    for (let offset = -180; offset <= 180; offset += 60) {
+      const shifted = side.name === 'left' || side.name === 'right'
+        ? { left: base.left, top: base.top + offset, right: base.right, bottom: base.bottom + offset }
+        : { left: base.left + offset, top: base.top, right: base.right + offset, bottom: base.bottom };
+      candidates.push({ ...side, rect: clampToCanvas(shifted) });
+    }
+  }
+
+  candidates.sort((a, b) => {
+    const ac = { x: (a.rect.left + a.rect.right) / 2, y: (a.rect.top + a.rect.bottom) / 2 };
+    const bc = { x: (b.rect.left + b.rect.right) / 2, y: (b.rect.top + b.rect.bottom) / 2 };
+    const ad = Math.hypot(ac.x - originCenter.x, ac.y - originCenter.y);
+    const bd = Math.hypot(bc.x - originCenter.x, bc.y - originCenter.y);
+    return a.score - b.score || ad - bd;
+  });
+
+  return candidates.find(candidate => rectIsFree(candidate.rect, blocked))?.rect
+    || findOffscreenWindowPosition(width, height, blocked);
+}
 
 function spawnWindow({ label, html, width, isAI, sectionId }) {
   const layer = document.getElementById('windows-layer');
   const win = document.createElement('div');
-  win.className = 'cwin';
+  win.className = 'cwin' + (isAI ? ' cwin-ai' : ' cwin-section');
   if (sectionId) win.dataset.section = sectionId;
 
-  const pos = POSITIONS[wi % POSITIONS.length];
   const rot = ROTS[wi % ROTS.length];
-  const jitter = wi * 20;
-  win.style.left = (pos[0] + (jitter % 60) - 30) + 'px';
-  win.style.top  = (pos[1] + (jitter % 40) - 20) + 'px';
+  win.style.left = '-9999px';
+  win.style.top  = '-9999px';
   win.style.transform = `rotate(${rot}deg)`;
   win.style.zIndex = wz++;
   if (width) win.style.width = width + 'px';
-  wi++;
 
   const bar = document.createElement('div');
   bar.className = 'cwin-bar';
-  bar.innerHTML = `<span class="cwin-label">${label}</span><button class="cwin-close">✕</button>`;
+  bar.innerHTML = `<span class="cwin-label">${escapeHtml(label)}</span><button class="cwin-close">✕</button>`;
   bar.querySelector('.cwin-close').addEventListener('click', () => win.remove());
 
   const body = document.createElement('div');
@@ -414,8 +639,23 @@ function spawnWindow({ label, html, width, isAI, sectionId }) {
   win.appendChild(bar);
   win.appendChild(body);
   layer.appendChild(win);
+
+  const others = getBlockedRects(win);
+  const winWidth = win.offsetWidth;
+  const winHeight = win.offsetHeight;
+  let shouldCenter = false;
+  let rect = findVisibleWindowPosition(winWidth, winHeight, others);
+  if (!rect) {
+    rect = findOffscreenWindowPosition(winWidth, winHeight, others);
+    shouldCenter = true;
+  }
+  win.style.left = rect.left + 'px';
+  win.style.top = rect.top + 'px';
+
   makeDraggable(win, bar);
   win.addEventListener('mousedown', () => win.style.zIndex = wz++);
+  if (shouldCenter) centerCanvasOnRect(rect);
+  wi++;
 }
 
 // Sidebar buttons
@@ -464,12 +704,29 @@ document.querySelectorAll('.sb-btn[data-section]').forEach(btn => {
 
 // ── Chat ──────────────────────────────────────────────────────────────────
 const chatOverlay = document.getElementById('chat-bar');
-// chatMessages removed — no bubble UI
 const chatInput    = document.getElementById('chat-input');
 const chatSend     = document.getElementById('chat-send');
 
 // Auto-close timer (60s of inactivity)
 let chatCloseTimer = null;
+let noticeTimer = null;
+
+function showNotice(message) {
+  const existing = document.querySelector('.chat-notice');
+  if (existing) existing.remove();
+
+  const notice = document.createElement('div');
+  notice.className = 'chat-notice';
+  notice.textContent = message;
+  document.body.appendChild(notice);
+  playError();
+
+  clearTimeout(noticeTimer);
+  noticeTimer = setTimeout(() => {
+    notice.classList.add('is-leaving');
+    notice.addEventListener('animationend', () => notice.remove(), { once: true });
+  }, 4200);
+}
 
 function resetChatTimer() {
   clearTimeout(chatCloseTimer);
@@ -539,14 +796,6 @@ chatInput.addEventListener('input', () => {
   chatInputWrap.classList.toggle('is-multiline', h > singleLineHeight + 4);
 });
 
-// Suggestion chips
-document.querySelectorAll('.suggestion').forEach(btn => {
-  btn.addEventListener('click', () => {
-    chatInput.value = btn.dataset.q;
-    sendMsg();
-  });
-});
-
 async function sendMsg() {
   const text = chatInput.value.trim();
   if (!text) return;
@@ -558,60 +807,46 @@ async function sendMsg() {
   resetChatTimer();
 
   // Show loading state
-  const suggestions = document.getElementById('chat-suggestions');
   const loading = document.getElementById('chat-loading');
-  if (suggestions) suggestions.style.display = 'none';
   if (loading) loading.classList.remove('hidden');
   chatSend.style.display = 'none';
 
   try {
-    const parsed = await callGemini(text);
+    const parsed = await callAI(text);
 
-    // Build free-form window — title is the question
-    const html = (parsed.paragraphs || [parsed.chat]).map(p => `<p>${p}</p>`).join('');
-    spawnWindow({ label: text, html, isAI: true });
+    if (parsed.display === 'notice') {
+      showNotice(parsed.chat || parsed.paragraphs?.[0] || 'This question is not relevant to Paolo\'s portfolio.');
+    } else {
+      const html = (parsed.paragraphs || [parsed.chat])
+        .map(p => `<p>${escapeHtml(p)}</p>`)
+        .join('');
+      spawnWindow({ label: parsed.title || text, html, isAI: true });
+    }
 
     // Bar stays open — reset the inactivity timer
     resetChatTimer();
 
   } catch (err) {
     console.error(err);
+    showNotice('Something went wrong while answering. Please try again in a moment.');
   } finally {
     if (loading) loading.classList.add('hidden');
-    if (suggestions) suggestions.style.display = 'flex';
     chatSend.style.display = 'flex';
     chatSend.disabled = false;
     chatInput.focus();
   }
 }
 
-function appendMsg(cls, text) {
-  const d = document.createElement('div');
-  d.className = 'msg ' + cls;
-  d.innerHTML = `<div class="msg-bubble">${text}</div>`;
-  chatMessages.appendChild(d);
-  chatMessages.scrollTop = chatMessages.scrollHeight;
-  return d;
-}
-
-function appendTyping() {
-  const d = document.createElement('div');
-  d.className = 'msg msg-agent msg-typing';
-  d.innerHTML = '<div class="msg-bubble"><div class="dots"><span></span><span></span><span></span></div></div>';
-  chatMessages.appendChild(d);
-  chatMessages.scrollTop = chatMessages.scrollHeight;
-  return d;
-}
-
 // ── Draggable ─────────────────────────────────────────────────────────────
 function makeDraggable(win, handle) {
-  let dr = false, sx = 0, sy = 0, ol = 0, ot = 0, or_ = 0;
+  let dr = false, sx = 0, sy = 0, ol = 0, ot = 0, or_ = 0, originRect = null;
   handle.addEventListener('mousedown', e => {
     if (e.target.classList.contains('cwin-close')) return;
     e.preventDefault();
     dr = true; sx = e.clientX; sy = e.clientY;
     ol = parseInt(win.style.left) || 0;
     ot = parseInt(win.style.top)  || 0;
+    originRect = getWindowRect(win);
     or_ = parseFloat(win.style.transform?.match(/rotate\(([^)]+)deg\)/)?.[1] || 0);
     win.classList.add('dragging');
     win.style.zIndex = wz++;
@@ -629,5 +864,7 @@ function makeDraggable(win, handle) {
     if (!dr) return;
     dr = false;
     win.classList.remove('dragging');
+    const escapeRect = findTriggerEscapeRect(win, originRect || getWindowRect(win));
+    if (escapeRect) animateWindowToRect(win, escapeRect);
   });
 }

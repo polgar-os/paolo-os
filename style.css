@@ -519,12 +519,47 @@ body {
 
 .cwin-label {
   font-family: var(--mono);
-  font-size: 8px;
-  color: var(--muted);
+  font-size: 10px;
+  color: var(--text);
+  font-weight: 500;
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.cwin-ai .cwin-bar {
+  background: var(--text);
+  border-bottom-color: var(--text);
+}
+
+.cwin-ai .cwin-label {
+  color: var(--panel);
+  font-size: 11px;
+}
+
+.cwin-ai .cwin-close {
+  color: var(--panel);
+}
+
+.cwin-ai .cwin-close:hover {
+  background: rgba(255, 255, 255, .14);
+  color: var(--panel);
+}
+
+[data-theme="dark"] .cwin-ai .cwin-bar {
+  background: var(--text);
+  border-bottom-color: var(--text);
+}
+
+[data-theme="dark"] .cwin-ai .cwin-label,
+[data-theme="dark"] .cwin-ai .cwin-close,
+[data-theme="dark"] .cwin-ai .cwin-close:hover {
+  color: var(--bg);
+}
+
+[data-theme="dark"] .cwin-ai .cwin-close:hover {
+  background: rgba(20, 20, 18, .12);
 }
 
 .cwin-close {
