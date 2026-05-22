@@ -76,7 +76,7 @@ function escapeHtml(value) {
 
 // ── Sound ─────────────────────────────────────────────────────────────────
 const interfaceClickAudio = new Audio('assets/interface-click.m4a');
-interfaceClickAudio.volume = 0.25;
+interfaceClickAudio.volume = 0.15;
 function playClick() {
   try {
     interfaceClickAudio.currentTime = 0;
