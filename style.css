@@ -1317,12 +1317,13 @@ body {
   padding: 0;
   margin: 0;
   resize: none;
-  overflow-y: auto;
-  height: 1.5em;
+  overflow-y: hidden;
+  height: 21px;
   max-height: 160px;
-  line-height: 1.5;
+  line-height: 21px;
   caret-color: var(--text);
   display: block;
+  box-sizing: content-box;
 }
 
 #chat-input::placeholder {

@@ -526,8 +526,10 @@ chatInput.addEventListener('keydown', e => {
 const chatInputWrap = document.getElementById('chat-input-wrap');
 chatInput.addEventListener('input', () => {
   chatInput.style.height = 'auto';
-  chatInput.style.height = chatInput.scrollHeight + 'px';
-  chatInputWrap.classList.toggle('is-multiline', chatInput.scrollHeight > 30);
+  const h = chatInput.scrollHeight;
+  chatInput.style.height = Math.min(h, 160) + 'px';
+  chatInput.style.overflowY = h > 160 ? 'auto' : 'hidden';
+  chatInputWrap.classList.toggle('is-multiline', h > 24);
 });
 
 // Suggestion chips
