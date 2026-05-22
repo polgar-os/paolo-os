@@ -144,7 +144,7 @@ function playHome() {
 }
 
 const errorAudio = new Audio('assets/error.m4a');
-errorAudio.volume = 0.10;
+errorAudio.volume = 0.25;
 function playError() {
   try {
     errorAudio.currentTime = 0;
@@ -207,8 +207,16 @@ document.querySelectorAll('.sb-btn[data-tip]').forEach(btn => {
     tooltip.classList.add('show');
   });
   btn.addEventListener('mousemove', e => {
-    tooltip.style.left = (e.clientX + 14) + 'px';
-    tooltip.style.top  = (e.clientY - 10) + 'px';
+    const leftAlign = btn.id === 'home-btn';
+    if (leftAlign) {
+      // Show to the left: position off-screen first to measure width, then place
+      tooltip.style.left = '-9999px';
+      const w = tooltip.offsetWidth;
+      tooltip.style.left = (e.clientX - w - 14) + 'px';
+    } else {
+      tooltip.style.left = (e.clientX + 14) + 'px';
+    }
+    tooltip.style.top = (e.clientY - 10) + 'px';
   });
   btn.addEventListener('mouseleave', () => tooltip.classList.remove('show'));
 });
