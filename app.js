@@ -75,17 +75,12 @@ function escapeHtml(value) {
 }
 
 // ── Sound ─────────────────────────────────────────────────────────────────
+const interfaceClickAudio = new Audio('assets/interface-click.m4a');
+interfaceClickAudio.volume = 0.35;
 function playClick() {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const o = ctx.createOscillator();
-    const g = ctx.createGain();
-    o.connect(g); g.connect(ctx.destination);
-    o.type = 'sine'; o.frequency.setValueAtTime(800, ctx.currentTime);
-    o.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.08);
-    g.gain.setValueAtTime(0.15, ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
-    o.start(); o.stop(ctx.currentTime + 0.12);
+    interfaceClickAudio.currentTime = 0;
+    interfaceClickAudio.play().catch(e => console.log('Interface click audio failed', e));
   } catch(e) {}
 }
 
