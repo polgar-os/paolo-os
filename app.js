@@ -515,7 +515,18 @@ chatOverlay.addEventListener('mousedown', resetChatTimer);
 chatOverlay.addEventListener('keydown', resetChatTimer);
 
 chatSend.addEventListener('click', sendMsg);
-chatInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendMsg(); });
+chatInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMsg();
+  }
+});
+
+// Auto-resize textarea
+chatInput.addEventListener('input', () => {
+  chatInput.style.height = 'auto';
+  chatInput.style.height = chatInput.scrollHeight + 'px';
+});
 
 // Suggestion chips
 document.querySelectorAll('.suggestion').forEach(btn => {
@@ -529,6 +540,7 @@ async function sendMsg() {
   const text = chatInput.value.trim();
   if (!text) return;
   chatInput.value = '';
+  chatInput.style.height = 'auto';
   chatSend.disabled = true;
   resetChatTimer();
 

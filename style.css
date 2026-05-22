@@ -1293,7 +1293,7 @@ body {
 
 #chat-input-wrap {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 8px;
   background: var(--panel);
   border: 1px solid var(--border);
@@ -1311,6 +1311,14 @@ body {
   color: var(--text);
   outline: none;
   padding: 0;
+  resize: none;
+  overflow: hidden;
+  min-height: 20px;
+  max-height: 160px;
+  overflow-y: auto;
+  line-height: 1.5;
+  caret-color: var(--accent);
+  display: block;
 }
 
 #chat-input::placeholder {
