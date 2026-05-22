@@ -356,7 +356,7 @@ const ROTS = [-1.5, 1.2, -0.8, 2, -1, 0.6, -1.8, 1.5, -0.5, 1, -2, 0.8];
 function spawnWindow({ label, html, width, isAI, sectionId }) {
   const layer = document.getElementById('windows-layer');
   const win = document.createElement('div');
-  win.className = 'cwin';
+  win.className = 'cwin' + (isAI ? ' cwin-ai' : ' cwin-section');
   if (sectionId) win.dataset.section = sectionId;
 
   const pos = POSITIONS[wi % POSITIONS.length];
