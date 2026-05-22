@@ -172,8 +172,19 @@ function applyT() {
 
 (function initOffset() {
   const cw = container.clientWidth, ch = container.clientHeight;
+
+  // Sidebar top = 50vh - sidebarHeight/2
+  const sidebar = document.getElementById('sidebar');
+  const sidebarTop = ch / 2 - sidebar.offsetHeight / 2;
+
+  // Trigger canvas Y: we want the top of the trigger group to sit at sidebarTop on screen.
+  // Screen Y of a canvas point p: screenY = p * sc + oy
+  // We want screenY of trigger.top == sidebarTop
+  // trigger.top (canvas) = 560 (fixed in CSS), but we need to set oy so that:
+  //   560 * sc + oy = sidebarTop  →  oy = sidebarTop - 560 * sc
+  // And ox centers canvas x=1000 in the viewport:
   ox = cw / 2 - 1000 * sc;
-  oy = ch / 2 - 640 * sc;
+  oy = sidebarTop - 560 * sc;
   applyT();
 })();
 
@@ -227,8 +238,10 @@ document.getElementById('home-btn').addEventListener('click', () => {
   const cw = container.clientWidth, ch = container.clientHeight;
   // Animate to center — trigger is at canvas (1000, 560)
   const targetSC = 1;
+  const sidebar = document.getElementById('sidebar');
+  const sidebarTop = ch / 2 - sidebar.offsetHeight / 2;
   const targetOX = cw / 2 - 1000 * targetSC;
-  const targetOY = ch / 2 - 640 * targetSC;
+  const targetOY = sidebarTop - 560 * targetSC;
   const startOX = ox, startOY = oy, startSC = sc;
   const duration = 500;
   const start = performance.now();

@@ -77,10 +77,10 @@ body {
 
 .sb-logo {
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: 12px;
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 700;
   color: var(--text);
-  letter-spacing: .05em;
+  letter-spacing: .04em;
   margin-bottom: 4px;
 }
 
@@ -1517,8 +1517,8 @@ body {
   gap: 0;
   cursor: pointer;
   z-index: 10;
-  /* Center the trigger on its canvas coordinates */
-  transform: translate(-50%, -50%) !important;
+  /* Anchor horizontally centered, vertically from top */
+  transform: translateX(-50%) !important;
 }
 
 .tr-title {
@@ -1592,7 +1592,7 @@ body {
 
 /* Ensure trigger hover doesn't override the centering transform */
 #chat-trigger:hover {
-  transform: translate(-50%, -50%) !important;
+  transform: translateX(-50%) !important;
 }
 
 .tr-text-main {
