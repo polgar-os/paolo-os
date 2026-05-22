@@ -144,7 +144,7 @@ function playHome() {
 }
 
 const errorAudio = new Audio('assets/error.m4a');
-errorAudio.volume = 0.25;
+errorAudio.volume = 0.10;
 function playError() {
   try {
     errorAudio.currentTime = 0;
