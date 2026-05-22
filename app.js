@@ -117,6 +117,38 @@ function playClick() {
   } catch(e) {}
 }
 
+const switchAudio = new Audio('assets/switch.mp3');
+function playSwitch() {
+  try {
+    switchAudio.currentTime = 0;
+    switchAudio.play().catch(e => console.log('Switch audio failed', e));
+  } catch(e) {}
+}
+
+const trashAudio = new Audio('assets/trash.m4a');
+function playTrash() {
+  try {
+    trashAudio.currentTime = 0;
+    trashAudio.play().catch(e => console.log('Trash audio failed', e));
+  } catch(e) {}
+}
+
+const homeAudio = new Audio('assets/home.m4a');
+function playHome() {
+  try {
+    homeAudio.currentTime = 0;
+    homeAudio.play().catch(e => console.log('Home audio failed', e));
+  } catch(e) {}
+}
+
+const errorAudio = new Audio('assets/error.m4a');
+function playError() {
+  try {
+    errorAudio.currentTime = 0;
+    errorAudio.play().catch(e => console.log('Error audio failed', e));
+  } catch(e) {}
+}
+
 // ── Canvas pan/zoom ───────────────────────────────────────────────────────
 let ox = 0, oy = 0, sc = 1;
 let pan = false, px = 0, py = 0, pox = 0, poy = 0;
@@ -180,12 +212,13 @@ document.querySelectorAll('.sb-btn[data-tip]').forEach(btn => {
 
 // ── Home button — recenter on trigger ────────────────────────────────────
 document.getElementById('home-btn').addEventListener('click', () => {
-  playClick();
+  playHome();
   const cw = container.clientWidth, ch = container.clientHeight;
   // Animate to center — trigger is at canvas (1000, 560)
-  const targetOX = cw / 2 - 1000 * sc;
-  const targetOY = ch / 2 - 640 * sc;
-  const startOX = ox, startOY = oy;
+  const targetSC = 1;
+  const targetOX = cw / 2 - 1000 * targetSC;
+  const targetOY = ch / 2 - 640 * targetSC;
+  const startOX = ox, startOY = oy, startSC = sc;
   const duration = 500;
   const start = performance.now();
   function animate(now) {
@@ -193,6 +226,7 @@ document.getElementById('home-btn').addEventListener('click', () => {
     const ease = t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
     ox = startOX + (targetOX - startOX) * ease;
     oy = startOY + (targetOY - startOY) * ease;
+    sc = startSC + (targetSC - startSC) * ease;
     applyT();
     if (t < 1) requestAnimationFrame(animate);
   }
@@ -201,14 +235,14 @@ document.getElementById('home-btn').addEventListener('click', () => {
 
 // ── Theme ─────────────────────────────────────────────────────────────────
 document.getElementById('theme-btn').addEventListener('click', () => {
-  playClick();
+  playSwitch();
   const html = document.documentElement;
   html.dataset.theme = html.dataset.theme === 'dark' ? 'light' : 'dark';
 });
 
 // ── Clear canvas ──────────────────────────────────────────────────────────
 document.getElementById('clear-btn').addEventListener('click', () => {
-  playClick();
+  playTrash();
   document.getElementById('windows-layer').innerHTML = '';
   wi = 0;
 });
@@ -328,10 +362,11 @@ const POSITIONS = [
 ];
 const ROTS = [-1.5, 1.2, -0.8, 2, -1, 0.6, -1.8, 1.5, -0.5, 1, -2, 0.8];
 
-function spawnWindow({ label, html, width, isAI }) {
+function spawnWindow({ label, html, width, isAI, sectionId }) {
   const layer = document.getElementById('windows-layer');
   const win = document.createElement('div');
   win.className = 'cwin';
+  if (sectionId) win.dataset.section = sectionId;
 
   const pos = POSITIONS[wi % POSITIONS.length];
   const rot = ROTS[wi % ROTS.length];
@@ -362,13 +397,44 @@ function spawnWindow({ label, html, width, isAI }) {
 // Sidebar buttons
 document.querySelectorAll('.sb-btn[data-section]').forEach(btn => {
   btn.addEventListener('click', () => {
-    playClick();
-    document.querySelectorAll('.sb-btn[data-section]').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
     const sec = btn.dataset.section;
+    const existingWin = document.querySelector(`.cwin[data-section="${sec}"]`);
+    
+    if (existingWin) {
+      playError();
+      const cw = container.clientWidth, ch = container.clientHeight;
+      const left = parseFloat(existingWin.style.left) || 0;
+      const top = parseFloat(existingWin.style.top) || 0;
+      const winW = existingWin.offsetWidth || 280;
+      const winH = existingWin.offsetHeight || 200;
+      
+      const targetOX = cw / 2 - (left + winW / 2) * sc;
+      const targetOY = ch / 2 - (top + winH / 2) * sc;
+      
+      const startOX = ox, startOY = oy;
+      const duration = 400;
+      const start = performance.now();
+      function animate(now) {
+        const t = Math.min((now - start) / duration, 1);
+        const ease = t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+        ox = startOX + (targetOX - startOX) * ease;
+        oy = startOY + (targetOY - startOY) * ease;
+        applyT();
+        if (t < 1) requestAnimationFrame(animate);
+      }
+      requestAnimationFrame(animate);
+      
+      existingWin.style.zIndex = wz++;
+      existingWin.classList.remove('vibrate');
+      void existingWin.offsetWidth; // trigger reflow
+      existingWin.classList.add('vibrate');
+      return;
+    }
+
+    playClick();
     const def = SECTION_DEFS[sec];
     if (!def) return;
-    spawnWindow({ label: def.label, html: def.build(), width: def.width });
+    spawnWindow({ label: def.label, html: def.build(), width: def.width, sectionId: sec });
   });
 });
 
