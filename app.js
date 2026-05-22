@@ -118,6 +118,7 @@ function playClick() {
 }
 
 const switchAudio = new Audio('assets/switch.mp3');
+switchAudio.volume = 0.25;
 function playSwitch() {
   try {
     switchAudio.currentTime = 0;
@@ -134,6 +135,7 @@ function playTrash() {
 }
 
 const homeAudio = new Audio('assets/home.m4a');
+homeAudio.volume = 0.25;
 function playHome() {
   try {
     homeAudio.currentTime = 0;
@@ -142,6 +144,7 @@ function playHome() {
 }
 
 const errorAudio = new Audio('assets/error.m4a');
+errorAudio.volume = 0.25;
 function playError() {
   try {
     errorAudio.currentTime = 0;
