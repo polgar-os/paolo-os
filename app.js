@@ -371,8 +371,24 @@ function screenToCanvasRect(rect) {
   };
 }
 
+function expandRect(rect, amount) {
+  return {
+    left: rect.left - amount,
+    top: rect.top - amount,
+    right: rect.right + amount,
+    bottom: rect.bottom + amount
+  };
+}
+
 function getVisibleCanvasBounds() {
   return screenToCanvasRect(getSafeScreenBounds());
+}
+
+function getTriggerReservedRect() {
+  const trigger = document.getElementById('chat-trigger');
+  if (!trigger) return null;
+  const rect = screenToCanvasRect(trigger.getBoundingClientRect());
+  return expandRect(rect, 24 / sc);
 }
 
 function getWindowRects(exceptWin) {
@@ -401,6 +417,14 @@ function rectsOverlap(a, b, gap = WINDOW_GAP) {
 
 function rectIsFree(rect, others) {
   return others.every(other => !rectsOverlap(rect, other));
+}
+
+function getBlockedRects(exceptWin) {
+  const triggerRect = getTriggerReservedRect();
+  return [
+    ...getWindowRects(exceptWin),
+    ...(triggerRect ? [triggerRect] : [])
+  ];
 }
 
 function clampToCanvas(rect) {
@@ -492,6 +516,104 @@ function centerCanvasOnRect(rect) {
   requestAnimationFrame(animate);
 }
 
+function getWindowRect(win) {
+  const left = parseFloat(win.style.left) || 0;
+  const top = parseFloat(win.style.top) || 0;
+  return {
+    left,
+    top,
+    right: left + win.offsetWidth,
+    bottom: top + win.offsetHeight
+  };
+}
+
+function animateWindowToRect(win, rect) {
+  const start = getWindowRect(win);
+  const duration = 260;
+  const startedAt = performance.now();
+
+  function animate(now) {
+    const t = Math.min((now - startedAt) / duration, 1);
+    const ease = 1 - Math.pow(1 - t, 3);
+    win.style.left = (start.left + (rect.left - start.left) * ease) + 'px';
+    win.style.top = (start.top + (rect.top - start.top) * ease) + 'px';
+    if (t < 1) requestAnimationFrame(animate);
+  }
+  requestAnimationFrame(animate);
+}
+
+function findTriggerEscapeRect(win, originRect) {
+  const triggerRect = getTriggerReservedRect();
+  if (!triggerRect) return null;
+
+  const current = getWindowRect(win);
+  if (!rectsOverlap(current, triggerRect, 0)) return null;
+
+  const width = current.right - current.left;
+  const height = current.bottom - current.top;
+  const triggerCenter = {
+    x: (triggerRect.left + triggerRect.right) / 2,
+    y: (triggerRect.top + triggerRect.bottom) / 2
+  };
+  const originCenter = {
+    x: (originRect.left + originRect.right) / 2,
+    y: (originRect.top + originRect.bottom) / 2
+  };
+  let vx = originCenter.x - triggerCenter.x;
+  let vy = originCenter.y - triggerCenter.y;
+  if (Math.abs(vx) + Math.abs(vy) < 1) {
+    vx = ((current.left + current.right) / 2) - triggerCenter.x;
+    vy = ((current.top + current.bottom) / 2) - triggerCenter.y;
+  }
+  if (Math.abs(vx) + Math.abs(vy) < 1) vx = 1;
+
+  const sides = [
+    {
+      name: 'right',
+      score: vx >= 0 ? 0 : 1,
+      rect: { left: triggerRect.right + WINDOW_GAP, top: current.top, right: triggerRect.right + WINDOW_GAP + width, bottom: current.top + height }
+    },
+    {
+      name: 'left',
+      score: vx < 0 ? 0 : 1,
+      rect: { left: triggerRect.left - WINDOW_GAP - width, top: current.top, right: triggerRect.left - WINDOW_GAP, bottom: current.top + height }
+    },
+    {
+      name: 'bottom',
+      score: vy >= 0 ? 0 : 1,
+      rect: { left: current.left, top: triggerRect.bottom + WINDOW_GAP, right: current.left + width, bottom: triggerRect.bottom + WINDOW_GAP + height }
+    },
+    {
+      name: 'top',
+      score: vy < 0 ? 0 : 1,
+      rect: { left: current.left, top: triggerRect.top - WINDOW_GAP - height, right: current.left + width, bottom: triggerRect.top - WINDOW_GAP }
+    }
+  ];
+
+  const blocked = getBlockedRects(win);
+  const candidates = [];
+  for (const side of sides) {
+    const base = side.rect;
+    for (let offset = -180; offset <= 180; offset += 60) {
+      const shifted = side.name === 'left' || side.name === 'right'
+        ? { left: base.left, top: base.top + offset, right: base.right, bottom: base.bottom + offset }
+        : { left: base.left + offset, top: base.top, right: base.right + offset, bottom: base.bottom };
+      candidates.push({ ...side, rect: clampToCanvas(shifted) });
+    }
+  }
+
+  candidates.sort((a, b) => {
+    const ac = { x: (a.rect.left + a.rect.right) / 2, y: (a.rect.top + a.rect.bottom) / 2 };
+    const bc = { x: (b.rect.left + b.rect.right) / 2, y: (b.rect.top + b.rect.bottom) / 2 };
+    const ad = Math.hypot(ac.x - originCenter.x, ac.y - originCenter.y);
+    const bd = Math.hypot(bc.x - originCenter.x, bc.y - originCenter.y);
+    return a.score - b.score || ad - bd;
+  });
+
+  return candidates.find(candidate => rectIsFree(candidate.rect, blocked))?.rect
+    || findOffscreenWindowPosition(width, height, blocked);
+}
+
 function spawnWindow({ label, html, width, isAI, sectionId }) {
   const layer = document.getElementById('windows-layer');
   const win = document.createElement('div');
@@ -518,7 +640,7 @@ function spawnWindow({ label, html, width, isAI, sectionId }) {
   win.appendChild(body);
   layer.appendChild(win);
 
-  const others = getWindowRects(win);
+  const others = getBlockedRects(win);
   const winWidth = win.offsetWidth;
   const winHeight = win.offsetHeight;
   let shouldCenter = false;
@@ -717,13 +839,14 @@ async function sendMsg() {
 
 // ── Draggable ─────────────────────────────────────────────────────────────
 function makeDraggable(win, handle) {
-  let dr = false, sx = 0, sy = 0, ol = 0, ot = 0, or_ = 0;
+  let dr = false, sx = 0, sy = 0, ol = 0, ot = 0, or_ = 0, originRect = null;
   handle.addEventListener('mousedown', e => {
     if (e.target.classList.contains('cwin-close')) return;
     e.preventDefault();
     dr = true; sx = e.clientX; sy = e.clientY;
     ol = parseInt(win.style.left) || 0;
     ot = parseInt(win.style.top)  || 0;
+    originRect = getWindowRect(win);
     or_ = parseFloat(win.style.transform?.match(/rotate\(([^)]+)deg\)/)?.[1] || 0);
     win.classList.add('dragging');
     win.style.zIndex = wz++;
@@ -741,5 +864,7 @@ function makeDraggable(win, handle) {
     if (!dr) return;
     dr = false;
     win.classList.remove('dragging');
+    const escapeRect = findTriggerEscapeRect(win, originRect || getWindowRect(win));
+    if (escapeRect) animateWindowToRect(win, escapeRect);
   });
 }
