@@ -1773,3 +1773,17 @@ body {
   color: var(--text);
   background: var(--panel2);
 }
+
+#home-btn.is-away {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  box-shadow: 0 6px 24px rgba(233, 87, 50, .36);
+}
+
+#home-btn.is-away:hover {
+  background: #d94f2d;
+  border-color: #d94f2d;
+  color: #fff;
+  box-shadow: 0 8px 30px rgba(233, 87, 50, .44);
+}

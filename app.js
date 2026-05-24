@@ -127,6 +127,25 @@ let wz = 10, wi = 0;
 const container = document.getElementById('canvas-container');
 const canvas    = document.getElementById('canvas');
 const zoomEl    = document.getElementById('zoom-indicator');
+const homeBtn   = document.getElementById('home-btn');
+
+function getHomeView(targetSC = 1) {
+  const cw = container.clientWidth, ch = container.clientHeight;
+  const sidebar = document.getElementById('sidebar');
+  const sidebarTop = ch / 2 - sidebar.offsetHeight / 2;
+  return {
+    sc: targetSC,
+    ox: cw / 2 - 1000 * targetSC,
+    oy: sidebarTop - 560 * targetSC
+  };
+}
+
+function updateHomeButtonState() {
+  const home = getHomeView(sc);
+  const distance = Math.hypot(ox - home.ox, oy - home.oy);
+  const zoomDelta = Math.abs(sc - 1);
+  homeBtn.classList.toggle('is-away', distance > 90 || zoomDelta > 0.08);
+}
 
 function applyT() {
   canvas.style.transform = `translate(${ox}px,${oy}px) scale(${sc})`;
@@ -135,23 +154,19 @@ function applyT() {
   const gridSize = 28 * sc;
   container.style.backgroundSize = `${gridSize}px ${gridSize}px`;
   container.style.backgroundPosition = `${ox % gridSize}px ${oy % gridSize}px`;
+  updateHomeButtonState();
 }
 
 (function initOffset() {
-  const cw = container.clientWidth, ch = container.clientHeight;
-
-  // Sidebar top = 50vh - sidebarHeight/2
-  const sidebar = document.getElementById('sidebar');
-  const sidebarTop = ch / 2 - sidebar.offsetHeight / 2;
-
   // Trigger canvas Y: we want the top of the trigger group to sit at sidebarTop on screen.
   // Screen Y of a canvas point p: screenY = p * sc + oy
   // We want screenY of trigger.top == sidebarTop
   // trigger.top (canvas) = 560 (fixed in CSS), but we need to set oy so that:
   //   560 * sc + oy = sidebarTop  →  oy = sidebarTop - 560 * sc
   // And ox centers canvas x=1000 in the viewport:
-  ox = cw / 2 - 1000 * sc;
-  oy = sidebarTop - 560 * sc;
+  const home = getHomeView(sc);
+  ox = home.ox;
+  oy = home.oy;
   applyT();
 })();
 
@@ -200,15 +215,13 @@ document.querySelectorAll('.sb-btn[data-tip]').forEach(btn => {
 });
 
 // ── Home button — recenter on trigger ────────────────────────────────────
-document.getElementById('home-btn').addEventListener('click', () => {
+homeBtn.addEventListener('click', () => {
   playHome();
-  const cw = container.clientWidth, ch = container.clientHeight;
   // Animate to center — trigger is at canvas (1000, 560)
   const targetSC = 1;
-  const sidebar = document.getElementById('sidebar');
-  const sidebarTop = ch / 2 - sidebar.offsetHeight / 2;
-  const targetOX = cw / 2 - 1000 * targetSC;
-  const targetOY = sidebarTop - 560 * targetSC;
+  const home = getHomeView(targetSC);
+  const targetOX = home.ox;
+  const targetOY = home.oy;
   const startOX = ox, startOY = oy, startSC = sc;
   const duration = 500;
   const start = performance.now();
