@@ -1,59 +1,145 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html>
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="2685.6">
-  <style type="text/css">
-    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Times; -webkit-text-stroke: #000000}
-    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Times; -webkit-text-stroke: #000000; min-height: 14.0px}
-    p.p3 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px 'Apple Color Emoji'; -webkit-text-stroke: #000000}
-    p.p4 {margin: 0.0px 0.0px 12.0px 0.0px; font: 12.0px Times; -webkit-text-stroke: #000000}
-    p.p5 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px 'Times New Roman'; -webkit-text-stroke: #000000}
-    p.p6 {margin: 0.0px 0.0px 0.0px 0.0px; font: 11.0px 'Helvetica Neue'; color: #000000; color: rgba(0, 0, 0, 0.85); -webkit-text-stroke: rgba(0, 0, 0, 0.85)}
-    span.s1 {font-kerning: none}
-    span.s2 {font: 12.0px 'Times New Roman'; font-kerning: none}
-    span.s3 {font: 12.0px Times; font-kerning: none}
-    span.s4 {font: 12.0px 'Apple Color Emoji'; font-kerning: none}
-    span.s5 {font-kerning: none; background-color: #b3b3b3}
-    span.s6 {font: 12.0px Times; font-kerning: none; color: #000000; -webkit-text-stroke: 0px #000000}
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Paolo Garito</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-<p class="p1"><span class="s1">PG</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">Paolo's infinite canvas</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">Ask me anything</span></p>
-<p class="p1"><span class="s1">or browse the sections on the left</span></p>
-<p class="p1"><span class="s1">my_second_favorite_sport.png</span></p>
-<p class="p3"><span class="s1">🌊</span></p>
-<p class="p4"><span class="s1">Surf. Il primo è il bouldering.<br>
-Some things don't need to be designed.</span></p>
-<p class="p1"><span class="s1">my tools stack</span></p>
-<p class="p1"><span class="s1">Figma</span><span class="s2">●●●●●</span></p>
-<p class="p5"><span class="s3">Miro</span><span class="s1">●●●●●</span></p>
-<p class="p1"><span class="s1">Framer</span><span class="s2">●●●●○</span></p>
-<p class="p1"><span class="s1">Claude / AI</span><span class="s2">●●●●○</span></p>
-<p class="p1"><span class="s1">Lovable</span><span class="s2">●●●○○</span></p>
-<p class="p1"><span class="s1">Notion</span><span class="s2">●●●●○</span></p>
-<p class="p1"><span class="s1">HTML/CSS</span><span class="s2">●●●○○</span></p>
-<p class="p1"><span class="s1">Python</span><span class="s2">●●○○○</span></p>
-<p class="p1"><span class="s1">elements that define who I am</span></p>
-<p class="p1"><span class="s1">curious by defaultsystems thinkerclimber surferitalianotrilingualbuilder anti-micromanagementdirect communicator visual learneralways asking whyloves espresso</span></p>
-<p class="p1"><span class="s4">👀</span><span class="s1"> you found it</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">100%</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">any language works · answers appear on the canvas</span></p>
-<p class="p1"><span class="s1">Clear canvas?</span></p>
-<p class="p1"><span class="s1">This will remove every open window from the canvas.</span></p>
-<p class="p6"><span class="s5">Cancel</span><span class="s6"> </span><span class="s5">Clear canvas</span></p>
-<p class="p2"><span class="s1"></span><br></p>
+
+  <!-- Sidebar pill -->
+  <aside id="sidebar">
+    <div class="sb-logo">PG</div>
+    <div class="sb-rule"></div>
+
+    <button class="sb-btn" data-section="about" data-tip="About me">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    </button>
+
+    <button class="sb-btn" data-section="projects" data-tip="Projects">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    </button>
+
+    <button class="sb-btn" data-section="skills" data-tip="Skills & Certs">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+    </button>
+
+    <button class="sb-btn" data-section="sideproject" data-tip="Side project">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="2.5"/></svg>
+    </button>
+
+    <button class="sb-btn" data-section="workstyle" data-tip="How I work">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+    </button>
+
+    <button class="sb-btn" data-section="cv" data-tip="CV">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="12" y2="17"/></svg>
+    </button>
+
+    <div class="sb-rule"></div>
+
+    <button class="sb-btn" id="theme-btn" data-tip="Toggle theme">
+      <svg class="icon-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <svg class="icon-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+
+    <button class="sb-btn sb-danger" id="clear-btn" data-tip="Clear canvas">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+    </button>
+  </aside>
+
+  <!-- Canvas -->
+  <main id="canvas-container">
+    <div id="canvas">
+      <!-- Chat trigger -->
+      <div id="chat-trigger">
+        <div class="tr-title">Paolo's infinite canvas</div>
+        <div class="tr-circle-wrap">
+          <div class="tr-ring tr-r1"></div>
+          <div class="tr-ring tr-r2"></div>
+          <div class="tr-core"></div>
+        </div>
+        <div class="tr-text-main">Ask me anything</div>
+        <div class="tr-hint">or browse the sections on the left</div>
+      </div>
+
+      <!-- Easter egg — far right off-screen -->
+      <div id="easter-egg">
+        <div class="ee-window">
+          <div class="ee-titlebar">
+            <span class="ee-filename">my_second_favorite_sport.png</span>
+          </div>
+          <div class="ee-surf">🌊</div>
+          <p class="ee-caption">Surf. Il primo è il bouldering.<br>Some things don't need to be designed.</p>
+        </div>
+        <div class="ee-window ee-tools">
+          <div class="ee-sectiontitle">my tools stack</div>
+          <div class="ee-toollist">
+            <div class="ee-tool"><span>Figma</span><span class="ee-dots">●●●●●</span></div>
+            <div class="ee-tool"><span>Miro</span><span class="ee-dots">●●●●●</span></div>
+            <div class="ee-tool"><span>Framer</span><span class="ee-dots">●●●●○</span></div>
+            <div class="ee-tool"><span>Claude / AI</span><span class="ee-dots">●●●●○</span></div>
+            <div class="ee-tool"><span>Lovable</span><span class="ee-dots">●●●○○</span></div>
+            <div class="ee-tool"><span>Notion</span><span class="ee-dots">●●●●○</span></div>
+            <div class="ee-tool"><span>HTML/CSS</span><span class="ee-dots">●●●○○</span></div>
+            <div class="ee-tool"><span>Python</span><span class="ee-dots">●●○○○</span></div>
+          </div>
+          <div class="ee-who-title">elements that define who I am</div>
+          <div class="ee-tags">
+            <span>curious by default</span><span>systems thinker</span><span>climber</span>
+            <span>surfer</span><span>italiano</span><span>trilingual</span><span>builder</span>
+            <span>anti-micromanagement</span><span>direct communicator</span>
+            <span>visual learner</span><span>always asking why</span><span>loves espresso</span>
+          </div>
+        </div>
+        <div class="ee-hint">👀 you found it</div>
+      </div>
+
+      <div id="windows-layer"></div>
+    </div>
+  </main>
+
+  <!-- Bottom Right Controls -->
+  <div id="bottom-right-controls">
+    <button class="sb-btn" id="home-btn" data-tip="Back to center">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12L12 3l9 9"/><path d="M9 21V12h6v9"/><path d="M3 12v9h18v-9"/></svg>
+    </button>
+    <div id="zoom-indicator">100%</div>
+  </div>
+
+  <!-- Chat bar — anchored bottom center -->
+  <div id="chat-bar" class="hidden">
+    <div id="chat-input-wrap">
+      <textarea id="chat-input" placeholder="Ask anything about Paolo…" autocomplete="off"></textarea>
+      <div id="chat-loading" class="hidden">
+        <div class="dots"><span></span><span></span><span></span></div>
+      </div>
+      <button id="chat-send">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+    <div id="chat-footer">any language works · answers appear on the canvas</div>
+  </div>
+
+  <!-- Clear confirmation -->
+  <div id="clear-confirm" class="confirm-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="clear-confirm-title">
+    <div class="confirm-dialog">
+      <div class="confirm-title" id="clear-confirm-title">Clear canvas?</div>
+      <div class="confirm-copy">This will remove every open window from the canvas.</div>
+      <div class="confirm-actions">
+        <button class="confirm-btn confirm-secondary" id="clear-cancel">Cancel</button>
+        <button class="confirm-btn confirm-danger" id="clear-confirm-btn">Clear canvas</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tooltip -->
+  <div id="tooltip"></div>
+
+  <script src="app.js"></script>
 </body>
 </html>
